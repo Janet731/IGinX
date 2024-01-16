@@ -1,10 +1,6 @@
 package cn.edu.tsinghua.iginx.engine.physical.task.visitor;
 
-import cn.edu.tsinghua.iginx.engine.physical.task.BinaryMemoryPhysicalTask;
-import cn.edu.tsinghua.iginx.engine.physical.task.GlobalPhysicalTask;
-import cn.edu.tsinghua.iginx.engine.physical.task.MultipleMemoryPhysicalTask;
-import cn.edu.tsinghua.iginx.engine.physical.task.StoragePhysicalTask;
-import cn.edu.tsinghua.iginx.engine.physical.task.UnaryMemoryPhysicalTask;
+import cn.edu.tsinghua.iginx.engine.physical.task.*;
 
 public interface TaskVisitor {
 

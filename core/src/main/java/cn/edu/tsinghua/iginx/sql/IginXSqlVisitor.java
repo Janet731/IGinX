@@ -130,7 +130,6 @@ import cn.edu.tsinghua.iginx.sql.statement.selectstatement.BinarySelectStatement
 import cn.edu.tsinghua.iginx.sql.statement.selectstatement.CommonTableExpression;
 import cn.edu.tsinghua.iginx.sql.statement.selectstatement.SelectStatement;
 import cn.edu.tsinghua.iginx.sql.statement.selectstatement.UnarySelectStatement;
-import cn.edu.tsinghua.iginx.sql.utils.ExpressionUtils;
 import cn.edu.tsinghua.iginx.thrift.DataType;
 import cn.edu.tsinghua.iginx.thrift.JobState;
 import cn.edu.tsinghua.iginx.thrift.RemovedStorageEngineInfo;
@@ -834,12 +833,7 @@ public class IginXSqlVisitor extends SqlBaseVisitor<Statement> {
       }
       ret.forEach(
           expression -> {
-            if (ExpressionUtils.isConstantArithmeticExpr(expression)) {
-              throw new SQLParserException(
-                  "SELECT constant arithmetic expression isn't supported yet.");
-            } else {
-              selectStatement.setExpression(expression);
-            }
+            selectStatement.setExpression(expression);
           });
     }
 
@@ -960,36 +954,45 @@ public class IginXSqlVisitor extends SqlBaseVisitor<Statement> {
         isDistinct = true;
       }
     }
-
     List<String> columns = new ArrayList<>();
-    for (PathContext pathContext : funcCtx.path()) {
-      columns.add(parsePath(pathContext));
-    }
-
     List<Object> args = new ArrayList<>();
     Map<String, Object> kvargs = new HashMap<>();
-    for (ParamContext paramContext : funcCtx.param()) {
-      Object val = parseValue(paramContext.value);
-      if (paramContext.key != null) {
-        String key = paramContext.key.getText();
-        kvargs.put(key, val);
-      } else {
-        args.add(val);
+    if (funcCtx.path() != null) {
+      for (PathContext pathContext : funcCtx.path()) {
+        columns.add(parsePath(pathContext));
+      }
+      for (ParamContext paramContext : funcCtx.param()) {
+        Object val = parseValue(paramContext.value);
+        if (paramContext.key != null) {
+          String key = paramContext.key.getText();
+          kvargs.put(key, val);
+        } else {
+          args.add(val);
+        }
       }
     }
 
     // 如果查询语句中FROM子句只有一个部分且FROM一个前缀，则SELECT子句中的path只用写出后缀
     if (selectStatement.isFromSinglePath()) {
       String fromPath = selectStatement.getFromPart(0).getPrefix();
-
-      List<String> newColumns = new ArrayList<>();
-      for (String column : columns) {
-        newColumns.add(fromPath + SQLConstant.DOT + column);
+      if (funcCtx.constant() != null) {
+        String funcParam = parseValue(funcCtx.constant()).toString();
+        columns.add(funcParam);
+        selectStatement.setConstFuncParam(Double.parseDouble(funcParam));
+      } else {
+        List<String> newColumns = new ArrayList<>();
+        for (String column : columns) {
+          newColumns.add(fromPath + SQLConstant.DOT + column);
+        }
+        columns = newColumns;
       }
-      columns = newColumns;
     }
     FuncExpression expression = new FuncExpression(funcName, columns, args, kvargs, isDistinct);
-    selectStatement.setSelectedFuncsAndExpression(funcName, expression);
+    if (funcCtx.constant() != null) {
+      selectStatement.setSelectedFuncsAndExpression(funcName, expression, false);
+    } else {
+      selectStatement.setSelectedFuncsAndExpression(funcName, expression);
+    }
     return expression;
   }
 

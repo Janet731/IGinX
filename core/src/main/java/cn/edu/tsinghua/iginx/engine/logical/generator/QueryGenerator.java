@@ -28,9 +28,7 @@ import cn.edu.tsinghua.iginx.engine.shared.operator.type.FuncType;
 import cn.edu.tsinghua.iginx.engine.shared.operator.type.JoinAlgType;
 import cn.edu.tsinghua.iginx.engine.shared.operator.type.OperatorType;
 import cn.edu.tsinghua.iginx.engine.shared.operator.type.OuterJoinType;
-import cn.edu.tsinghua.iginx.engine.shared.source.GlobalSource;
-import cn.edu.tsinghua.iginx.engine.shared.source.OperatorSource;
-import cn.edu.tsinghua.iginx.engine.shared.source.Source;
+import cn.edu.tsinghua.iginx.engine.shared.source.*;
 import cn.edu.tsinghua.iginx.metadata.DefaultMetaManager;
 import cn.edu.tsinghua.iginx.metadata.IMetaManager;
 import cn.edu.tsinghua.iginx.metadata.entity.ColumnsInterval;
@@ -38,6 +36,7 @@ import cn.edu.tsinghua.iginx.metadata.entity.FragmentMeta;
 import cn.edu.tsinghua.iginx.metadata.entity.KeyInterval;
 import cn.edu.tsinghua.iginx.policy.IPolicy;
 import cn.edu.tsinghua.iginx.policy.PolicyManager;
+import cn.edu.tsinghua.iginx.sql.SQLConstant;
 import cn.edu.tsinghua.iginx.sql.statement.Statement;
 import cn.edu.tsinghua.iginx.sql.statement.frompart.CteFromPart;
 import cn.edu.tsinghua.iginx.sql.statement.frompart.FromPart;
@@ -52,13 +51,7 @@ import cn.edu.tsinghua.iginx.sql.statement.selectstatement.UnarySelectStatement;
 import cn.edu.tsinghua.iginx.sql.statement.selectstatement.UnarySelectStatement.QueryType;
 import cn.edu.tsinghua.iginx.utils.Pair;
 import cn.edu.tsinghua.iginx.utils.SortUtils;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,10 +112,10 @@ public class QueryGenerator extends AbstractGenerator {
    * @return 生成的操作符树
    */
   /*
-   大体步骤如下：
-   1. 根据Set Operator Type，初始化一个Union或Except或Intersect操作符及子树
-   2. 如果有Order By子句或Limit子句，构建相关操作符
-  */
+   * 大体步骤如下：
+   * 1. 根据Set Operator Type，初始化一个Union或Except或Intersect操作符及子树
+   * 2. 如果有Order By子句或Limit子句，构建相关操作符
+   */
   private Operator generateRoot(BinarySelectStatement selectStatement) {
     Operator root;
 
@@ -146,22 +139,33 @@ public class QueryGenerator extends AbstractGenerator {
    * @return 生成的操作符树
    */
   /*
-  大体步骤如下：
-  1.首先根据SelectStatement的Project、Join、From部分，初始化一个操作符树，最终只会调用其中一个init函数
-  2.检查操作符树是否为空，或者metaManager是否有可写的存储引擎，或者SubQuery是否有freeVariables
-  3.按顺序处理其他相关操作符，并加入到操作符树中
-
-  今后拓展generator时，应该该按照通过添加相应函数来拓展，而不是直接把逻辑写在该函数中
-  1.添加初始化逻辑时，应该实现一个init函数，如果满足条件则返回一个操作符树，否则返回null。
-  2.添加针对某个操作符的构建逻辑时，应该写一个build函数，如果满足条件则在root之上构建一个操作符，否则返回原root。
-  3.添加检查逻辑时，应该写一个check函数，如果根据条件返回true/false,或者不满足条件时抛出异常。
-  */
+   * 大体步骤如下：
+   * 1.首先根据SelectStatement的Project、Join、From部分，初始化一个操作符树，最终只会调用其中一个init函数
+   * 2.检查操作符树是否为空，或者metaManager是否有可写的存储引擎，或者SubQuery是否有freeVariables
+   * 3.按顺序处理其他相关操作符，并加入到操作符树中
+   *
+   * 今后拓展generator时，应该该按照通过添加相应函数来拓展，而不是直接把逻辑写在该函数中
+   * 1.添加初始化逻辑时，应该实现一个init函数，如果满足条件则返回一个操作符树，否则返回null。
+   * 2.添加针对某个操作符的构建逻辑时，应该写一个build函数，如果满足条件则在root之上构建一个操作符，否则返回原root。
+   * 3.添加检查逻辑时，应该写一个check函数，如果根据条件返回true/false,或者不满足条件时抛出异常。
+   */
   private Operator generateRoot(UnarySelectStatement selectStatement) {
     Operator root;
+    // 为了确保行数和结果行数相同, 在常数表达式中，如果有from子句，将其路径处理为其中一个tableName.*
+    if (!selectStatement.getFromParts().isEmpty()
+        && (selectStatement.getConstExpressionsCount() == selectStatement.getExpressions().size()
+            || !selectStatement.getConstFuncParam().isEmpty())) {
+      PathFromPart pathFromPart = (PathFromPart) selectStatement.getFromParts().get(0);
+      String originFullPath = pathFromPart.getOriginPrefix() + SQLConstant.DOT + "*";
+      if (selectStatement.getPathSet().isEmpty()) {
+        selectStatement.setPathSet(originFullPath);
+      }
+    }
 
     root = initProjectWaitingForPath(selectStatement);
     root = root != null ? root : initFilterAndMergeFragmentsWithJoin(selectStatement);
     root = root != null ? root : initFromPart(selectStatement);
+    root = root != null ? root : initWithoutFromPart(selectStatement);
     root = root != null ? root : initFilterAndMergeFragments(selectStatement);
 
     if (!checkRoot(root) && !checkIsMetaWritable()) {
@@ -174,6 +178,8 @@ public class QueryGenerator extends AbstractGenerator {
     root = buildValueFilter(selectStatement, root);
 
     root = buildSelectSubQuery(selectStatement, root);
+
+    root = buildCountTransform(selectStatement, root);
 
     root = buildGroupByQuery(selectStatement, root);
 
@@ -288,6 +294,7 @@ public class QueryGenerator extends AbstractGenerator {
         getOrderList(rightQuery),
         selectStatement.isDistinct());
   }
+
   /**
    * 如果BinarySelectStatement的Set Operator Type是Except, 根据它的左右子查询，初始化一个Except操作符及子树
    *
@@ -367,6 +374,27 @@ public class QueryGenerator extends AbstractGenerator {
       root = new Rename(new OperatorSource(root), fromPart.getAliasMap());
     }
     return root;
+  }
+
+  /**
+   * 如果SelectStatement的from部分为空，构造以ConstantSource为输入Project操作符来初始化操作符树
+   *
+   * @param selectStatement select语句上下文
+   * @return 以ConstantSource为输入Project操作符的操作符树；
+   */
+  private Operator initWithoutFromPart(UnarySelectStatement selectStatement) {
+    if (selectStatement.getFromParts().isEmpty()
+        && selectStatement.getPathSet().isEmpty()
+        && selectStatement.getQueryType() == QueryType.SimpleQuery) {
+      // 先将输入的常量表达式构造成一张二维表作为最底层的source，然后得到一个Project operator作为root
+      List<String> expressionList = new ArrayList<>();
+      for (Expression expression : selectStatement.getExpressions()) {
+        expressionList.add(expression.getColumnName());
+      }
+      Operator root = new Project(new ConstantSource(expressionList), expressionList, null);
+      return root;
+    }
+    return null;
   }
 
   /**
@@ -494,6 +522,45 @@ public class QueryGenerator extends AbstractGenerator {
       prefixA = prefixB;
     }
     return left;
+  }
+
+  /**
+   * 处理有from且全是常数表达式，例如 select 1 from test 或者 select count(1) from test的情况
+   *
+   * @param selectStatement Select上下文
+   * @param root 当前根节点
+   * @return 添加了CountTransform操作符的根节点，如果from子句中没有常数表达式，返回原根节点
+   */
+  private static Operator buildCountTransform(UnarySelectStatement selectStatement, Operator root) {
+    if (!selectStatement.getFromParts().isEmpty()
+        && (selectStatement.getConstExpressionsCount() == selectStatement.getExpressions().size()
+            || !selectStatement.getConstFuncParam().isEmpty())) {
+      // 直接构建一个function为count的setTransform
+      List<String> columns = new ArrayList<>(selectStatement.getPathSet()); // 将 Set 转换为 List
+      List<Object> args = new ArrayList<>();
+      Map<String, Object> kvargs = new HashMap<>();
+      FunctionParams params = new FunctionParams(columns, args, kvargs);
+      root =
+          new SetTransform(
+              new OperatorSource(root),
+              new FunctionCall(functionManager.getFunction("count"), params));
+      // 然后根据返回值构造表
+      List<Double> funcParam = new ArrayList<>();
+      List<String> expressionList = new ArrayList<>();
+      for (Expression expression : selectStatement.getExpressions()) {
+        if (expression.getType() == Expression.ExpressionType.Function) {
+          expressionList.add(((FuncExpression) expression).getColumnNameWithoutFunc());
+          if (funcParam.isEmpty()) {
+            funcParam = selectStatement.getConstFuncParam();
+          }
+        } else {
+          expressionList.add(expression.getColumnName());
+          funcParam.add(1.0);
+        }
+      }
+      root = new CountTransform(new OperatorSource(root), expressionList, funcParam);
+    }
+    return root;
   }
 
   /**
