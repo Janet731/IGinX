@@ -153,16 +153,20 @@ jobs:
               shell: bash
               run: |
                 cd IGinX
+                pwd
                 if [ "$RUNNER_OS" == "Linux" ]; then
-                chmod +x ".github/scripts/iginx/iginx.sh"
-                ".github/scripts/iginx/iginx.sh" 6888 6666
+                sudo sed -i 's/needInitBasicUDFFunctions=false/needInitBasicUDFFunctions=true/g' core/target/iginx-core-${VERSION}/conf/config.properties
                 elif [ "$RUNNER_OS" == "Windows" ]; then
-                chmod +x ".github/scripts/iginx/iginx_windows.sh"
-                ".github/scripts/iginx/iginx_windows.sh" 6888 6666
+                sed -i 's/needInitBasicUDFFunctions=false/needInitBasicUDFFunctions=true/g' core/target/iginx-core-${VERSION}/conf/config.properties
+                sed -i 's/pythonCMD=python3/pythonCMD=python/g' core/target/iginx-core-${VERSION}/conf/config.properties
                 elif [ "$RUNNER_OS" == "macOS" ]; then
-                chmod +x ".github/scripts/iginx/iginx_macos.sh"
-                ".github/scripts/iginx/iginx_macos.sh" 6888 6666
+                sudo sed -i '' 's/needInitBasicUDFFunctions=false/needInitBasicUDFFunctions=true/' core/target/iginx-core-${VERSION}/conf/config.properties
+                else
+                echo "$RUNNER_OS is not supported"
+                exit 1
                 fi
+                chmod +x "../.github/scripts/iginx/iginx_regression_udf_path.sh"
+                "../.github/scripts/iginx/iginx_regression_udf_path.sh"
 
             - name: set client test context
               uses: ./IGinX/.github/actions/context
