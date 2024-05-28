@@ -6,9 +6,9 @@ gzip -d web-Google.txt.gz
 echo "数据下载完成"
 
 # 源文件路径
-input_file="web-google.txt"
+input_file="web-Google.txt"
 # 输出文件路径
-output_file="web-google.csv"
+output_file="web-Google.csv"
 head -n 1000000 "$input_file" > "$input_file.temp"
 # 删除前4行并在文件开头插入一行
 sed '1,4d' "$input_file.temp" | (echo "fromnode,tonode" && cat) > "$output_file.temp"
@@ -37,15 +37,15 @@ echo "操作完成"
 index=0
 # 读取文件并在每一行前面加上序号
 while IFS= read -r line; do
-  echo "$index,$line" >> web-google2.csv
+  echo "$index,$line" >> web-Google2.csv
   index=$((index + 1))
 done < $output_file
 
-cat web-google2.csv | head -n 10
+cat web-Google2.csv | head -n 10
 
 set -e
 
-COMMAND1='LOAD DATA FROM INFILE "web-google2.csv" AS CSV SKIPPING HEADER INTO pagerank(key, fromnode, tonode);'
+COMMAND1='LOAD DATA FROM INFILE "web-Google2.csv" AS CSV SKIPPING HEADER INTO pagerank(key, fromnode, tonode);'
 COMMAND2='CREATE FUNCTION UDSF "pagerank" FROM "UDSFpagerank" IN "test/src/test/resources/polybench/udf/udsf_pagerank.py";'
 COMMAND3='select * from (select pagerank(key, fromnode, tonode) as pagerank from pagerank) order by pagerank desc limit 100;'
 
