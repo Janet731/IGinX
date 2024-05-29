@@ -28,7 +28,7 @@ jobs:
                         "FileSystem",
                         "Redis",
                         "MongoDB",
-                        "MySQL"
+                        "MySQL",
                     ]
                 metadata: [zookeeper]
         runs-on: ${{ matrix.os }}
@@ -88,23 +88,23 @@ jobs:
                   else
                     python3 test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/DataCleaningRunner.py
                   fi
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh"
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh"
+                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh"
 
             - name: Start sgd test
               shell: bash
               run: |
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
+                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
 
             - name: Start pagerank test
               shell: bash
               run: |
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
+                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
 
             - name: Show IGinX log
               if: always()
               shell: bash
               run: |
-                cat iginx-*.log
+                  cat iginx-*.log
