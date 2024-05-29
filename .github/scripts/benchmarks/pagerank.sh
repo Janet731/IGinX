@@ -52,11 +52,12 @@ COMMAND3='select * from (select pagerank(key, fromnode, tonode) as pagerank from
 SCRIPT_COMMAND="bash client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '{}'"
 
 bash -c "chmod +x client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh"
-
+output_file="${GITHUB_WORKSPACE}/output.txt"
 if [ "$RUNNER_OS" = "Linux" ]; then
-  bash -c "echo '$COMMAND1$COMMAND2$COMMAND3' | xargs -0 -t -i ${SCRIPT_COMMAND}"
+  bash -c "echo '$COMMAND1$COMMAND2$COMMAND3' | xargs -0 -t -i ${SCRIPT_COMMAND}" >> ${output_file}
 elif [ "$RUNNER_OS" = "Windows" ]; then
-  bash -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.bat -e '$COMMAND1$COMMAND2$COMMAND3'"
+  bash -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.bat -e '$COMMAND1$COMMAND2$COMMAND3'" >> ${output_file}
 elif [ "$RUNNER_OS" = "macOS" ]; then
-  sh -c "echo '$COMMAND1$COMMAND2$COMMAND3' | xargs -0 -t -I F sh client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e 'F'"
+  sh -c "echo '$COMMAND1$COMMAND2$COMMAND3' | xargs -0 -t -I F sh client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e 'F'" >> ${output_file}
 fi
+cat $output_file

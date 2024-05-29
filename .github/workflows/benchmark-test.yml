@@ -88,6 +88,8 @@ jobs:
                   else
                     python3 test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/DataCleaningRunner.py
                   fi
+                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh"
+                "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh"
 
             - name: Start sgd test
               shell: bash
@@ -100,3 +102,9 @@ jobs:
               run: |
                 chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
                 "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
+
+            - name: Show IGinX log
+              if: always()
+              shell: bash
+              run: |
+                cat iginx-*.log

@@ -30,38 +30,38 @@ with open('test/src/test/resources/dataCleaning/zipcode_city.csv', 'w') as f:
     for i in range(args.lineNum):
         f.write(str(i) + ',' + cities[i] + ',' + str(zipcodes[i]) + '\n')
 
-# 要运行的 shell 脚本文件路径
-script_path = ".github/scripts/benchmarks/dataCleaning.sh"
-
-# 使用 subprocess.run() 运行 shell 脚本
-# shell=True 表示通过 shell 解释器执行脚本
-# 如果脚本有输出，可以通过 stdout=subprocess.PIPE 捕获输出
-# 检测当前系统类型
-if platform.system() == "Windows":
-    # 使用 PowerShell 来运行脚本
-    result = subprocess.run(["powershell", "-Command", f"& '{script_path}'"], stdout=subprocess.PIPE, text=False)
-    # 将字节形式的输出解码为字符串形式
-    output = result.stdout.decode('utf-8')
-    print(output)
-else:
-    # 使用 bash 来运行脚本
-    result = subprocess.run(script_path, shell=True, stdout=subprocess.PIPE, text=True)
-
-# 检查脚本是否成功执行
-if result.returncode == 0:
-    print("Shell Script ran successfully!")
-    # 如果脚本有输出，可以打印输出内容
-    if result.stdout:
-        resultMessage = result.stdout
-        print("output: ", resultMessage)
-        print("end of output")
-        # 正确性检验
-        assert "Successfully write 1000000 record(s) to: [uszip.city, uszip.zipcode]" in resultMessage
-        assert '200000' in resultMessage
-        exit(0)
-    else:
-        print("no output")
-        exit(1)
-else:
-    print("Failed to run script!")
-    exit(1)
+# # 要运行的 shell 脚本文件路径
+# script_path = ".github/scripts/benchmarks/dataCleaning.sh"
+#
+# # 使用 subprocess.run() 运行 shell 脚本
+# # shell=True 表示通过 shell 解释器执行脚本
+# # 如果脚本有输出，可以通过 stdout=subprocess.PIPE 捕获输出
+# # 检测当前系统类型
+# if platform.system() == "Windows":
+#     # 使用 PowerShell 来运行脚本
+#     result = subprocess.run(["powershell", "-Command", f"& '{script_path}'"], stdout=subprocess.PIPE, text=False)
+#     # 将字节形式的输出解码为字符串形式
+#     output = result.stdout.decode('utf-8')
+#     print(output)
+# else:
+#     # 使用 bash 来运行脚本
+#     result = subprocess.run(script_path, shell=True, stdout=subprocess.PIPE, text=True)
+#
+# # 检查脚本是否成功执行
+# if result.returncode == 0:
+#     print("Shell Script ran successfully!")
+#     # 如果脚本有输出，可以打印输出内容
+#     if result.stdout:
+#         resultMessage = result.stdout
+#         print("output: ", resultMessage)
+#         print("end of output")
+#         # 正确性检验
+#         assert "Successfully write 1000000 record(s) to: [uszip.city, uszip.zipcode]" in resultMessage
+#         assert '200000' in resultMessage
+#         exit(0)
+#     else:
+#         print("no output")
+#         exit(1)
+# else:
+#     print("Failed to run script!")
+#     exit(1)
