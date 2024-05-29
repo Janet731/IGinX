@@ -43,6 +43,8 @@ done < $output_file
 
 cat web-Google2.csv | head -n 10
 
+pip install networkx
+
 set -e
 
 COMMAND1='LOAD DATA FROM INFILE "web-Google2.csv" AS CSV SKIPPING HEADER INTO pagerank(key, fromnode, tonode);'
