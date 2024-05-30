@@ -1,7 +1,11 @@
 #!/bin/bash
 
 # 从网站下载数据
-wget https://snap.stanford.edu/data/web-Google.txt.gz
+if [ "$RUNNER_OS" = "Windows" ]; then
+  curl -O https://snap.stanford.edu/data/web-Google.txt.gz
+else
+  wget https://snap.stanford.edu/data/web-Google.txt.gz
+fi
 gzip -d web-Google.txt.gz
 echo "数据下载完成"
 
@@ -60,6 +64,6 @@ if [ "$RUNNER_OS" = "Linux" ]; then
 elif [ "$RUNNER_OS" = "Windows" ]; then
   bash -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.bat -e '$COMMAND1$COMMAND2$COMMAND3'" >> ${output_file}
 elif [ "$RUNNER_OS" = "macOS" ]; then
-  sh -c "echo '$COMMAND1$COMMAND2$COMMAND3' | xargs -0 -t -I F sh client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e 'F'" >> ${output_file}
+  sh -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '$COMMAND1$COMMAND2$COMMAND3'" >> ${output_file}
 fi
 cat $output_file
