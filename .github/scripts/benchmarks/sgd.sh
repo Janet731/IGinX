@@ -46,13 +46,28 @@ COMMAND3="select trainall(key,label,lepton_pt,lepton_eta,lepton_phi,missing_ener
 SCRIPT_COMMAND="bash client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '{}'"
 
 bash -c "chmod +x client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh"
-output_file="${GITHUB_WORKSPACE}/output.txt"
 if [ "$RUNNER_OS" = "Linux" ]; then
-  bash -c "echo '$COMMAND1$COMMAND2$COMMAND3' | xargs -0 -t -i ${SCRIPT_COMMAND}" >> ${output_file}
+  bash -c "echo '$COMMAND1$COMMAND2' | xargs -0 -t -i ${SCRIPT_COMMAND}"
 elif [ "$RUNNER_OS" = "Windows" ]; then
-  bash -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.bat -e '$COMMAND1$COMMAND2$COMMAND3'" >> ${output_file}
+  bash -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.bat -e '$COMMAND1$COMMAND2'"
 elif [ "$RUNNER_OS" = "macOS" ]; then
-  sh -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '$COMMAND1$COMMAND2$COMMAND3'" >> ${output_file}
+  sh -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '$COMMAND1$COMMAND2'"
 fi
-echo "查询完成"
-cat $output_file
+output_file="${GITHUB_WORKSPACE}/output.txt"
+for i in {1..5}
+do
+  if [ "$RUNNER_OS" = "Linux" ]; then
+    bash -c "echo '$COMMAND3' | xargs -0 -t -i ${SCRIPT_COMMAND}" > tmp.txt
+  elif [ "$RUNNER_OS" = "Windows" ]; then
+    bash -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.bat -e '$COMMAND3'" > tmp.txt
+  elif [ "$RUNNER_OS" = "macOS" ]; then
+    sh -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '$COMMAND3'" > tmp.txt
+  fi
+  cat tmp.txt
+  last_line=$(tail -n 1 tmp.txt)
+  # 将最后一行写入 output.txt
+  echo "$last_line" >> ${output_file}
+done
+echo --------------------------------
+cat ${output_file}
+echo --------------------------------
