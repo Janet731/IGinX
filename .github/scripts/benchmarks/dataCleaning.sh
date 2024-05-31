@@ -9,8 +9,6 @@ SCRIPT_COMMAND="bash client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh
 
 bash -c "chmod +x client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh"
 output_file="${GITHUB_WORKSPACE}/output.txt"
-# 清空 output_file
-> $output_file
 if [ "$RUNNER_OS" = "Linux" ]; then
   bash -c "echo '$COMMAND1' | xargs -0 -t -i ${SCRIPT_COMMAND}"
 elif [ "$RUNNER_OS" = "Windows" ]; then
