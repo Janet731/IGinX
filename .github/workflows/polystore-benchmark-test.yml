@@ -184,7 +184,7 @@ jobs:
                       cd IGinX
                       if [ "$RUNNER_OS" == "Linux" ]; then
                         chmod +x ".github/scripts/test/cli/test_outfile.sh"
-                        ".github/scripts/test/cli/test_outfile.sh" "Parquet
+                        ".github/scripts/test/cli/test_outfile.sh" "Parquet"
                       elif [ "$RUNNER_OS" == "Windows" ]; then
                         chmod +x ".github/scripts/test/cli/test_outfile_windows.sh"
                         ".github/scripts/test/cli/test_outfile_windows.sh" "Parquet"
