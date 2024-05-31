@@ -113,175 +113,116 @@ jobs:
               if: always()
               shell: bash
               run: |
-                git clone https://github.com/IGinX-THU/IGinX.git
-                cd IGinX
-                mvn clean package -DskipTests -P-format
+                  git clone https://github.com/IGinX-THU/IGinX.git
+                  cd IGinX
+                  mvn clean package -DskipTests -P-format
 
             - name: Stop ZooKeeper
               uses: ./.github/actions/zookeeperRunner
               with:
-                if-stop: "true"
+                  if-stop: "true"
 
             - name: Stop IGinX
               uses: ./.github/actions/iginxRunner
               with:
-                version: ${VERSION}
-                if-stop: "true"
+                  version: ${VERSION}
+                  if-stop: "true"
+
+            - name: Stop DB
+              shell: bash
+              run: |
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/killDB.sh"
+                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/killDB.sh" ${{ matrix.DB-name }}
 
             - name: Rerun ZooKeeper
               uses: ./.github/actions/zookeeperRunner
               with:
-                if-rerun: "true"
+                  if-rerun: "true"
 
-#            - name: ReRun DB
-#              uses: ./.github/actions/dbRunner
-#              with:
-#                DB-name: ${{ matrix.DB-name }}
-#                Root-Dir-Path: "IGinX"
+            - name: ReRun DB
+              uses: ./.github/actions/dbRunner
+              with:
+                  DB-name: ${{ matrix.DB-name }}
+                  Root-Dir-Path: "IGinX"
 
             - name: Change IGinX config
               uses: ./.github/actions/confWriter
               with:
-                DB-name: ${{ matrix.DB-name }}
-                Set-Filter-Fragment-OFF: "true"
-                Root-Dir-Path: "IGinX"
+                  DB-name: ${{ matrix.DB-name }}
+                  Set-Filter-Fragment-OFF: "true"
+                  Root-Dir-Path: "IGinX"
 
             - name: Start IGinX
               shell: bash
               run: |
-                cd IGinX
-                pwd
-                if [ "$RUNNER_OS" == "Linux" ]; then
-                  sudo sed -i 's/needInitBasicUDFFunctions=false/needInitBasicUDFFunctions=true/g' core/target/iginx-core-${VERSION}/conf/config.properties
-                elif [ "$RUNNER_OS" == "Windows" ]; then
-                  sed -i 's/needInitBasicUDFFunctions=false/needInitBasicUDFFunctions=true/g' core/target/iginx-core-${VERSION}/conf/config.properties
-                  sed -i 's/pythonCMD=python3/pythonCMD=python/g' core/target/iginx-core-${VERSION}/conf/config.properties
-                elif [ "$RUNNER_OS" == "macOS" ]; then
-                  sudo sed -i '' 's/needInitBasicUDFFunctions=false/needInitBasicUDFFunctions=true/' core/target/iginx-core-${VERSION}/conf/config.properties
-                else
-                  echo "$RUNNER_OS is not supported"
-                  exit 1
-                fi
-                cd ..
-                chmod +x ".github/scripts/iginx/iginx_regression_udf_path.sh"
-                ".github/scripts/iginx/iginx_regression_udf_path.sh"
-
-            - name: set client test context
-              uses: ./IGinX/.github/actions/context
-              with:
-                work-name: restart-iginx-meta
-                metadata: ${{ matrix.metadata }}
-
-            - name: set client test context
-              uses: ./IGinX/.github/actions/context
-              with:
-                name: Pre Test Client Export File
-                shell: bash
-                run: |
                   cd IGinX
+                  pwd
                   if [ "$RUNNER_OS" == "Linux" ]; then
-                    chmod +x ".github/scripts/test/cli/test_outfile.sh"
-                    ".github/scripts/test/cli/test_outfile.sh" ${{ matrix.DB-name }}
+                    sudo sed -i 's/needInitBasicUDFFunctions=false/needInitBasicUDFFunctions=true/g' core/target/iginx-core-${VERSION}/conf/config.properties
                   elif [ "$RUNNER_OS" == "Windows" ]; then
-                    chmod +x ".github/scripts/test/cli/test_outfile_windows.sh"
-                    ".github/scripts/test/cli/test_outfile_windows.sh" ${{ matrix.DB-name }}
+                    sed -i 's/needInitBasicUDFFunctions=false/needInitBasicUDFFunctions=true/g' core/target/iginx-core-${VERSION}/conf/config.properties
+                    sed -i 's/pythonCMD=python3/pythonCMD=python/g' core/target/iginx-core-${VERSION}/conf/config.properties
                   elif [ "$RUNNER_OS" == "macOS" ]; then
-                    chmod +x ".github/scripts/test/cli/test_outfile_macos.sh"
-                    ".github/scripts/test/cli/test_outfile_macos.sh" ${{ matrix.DB-name }}
+                    sudo sed -i '' 's/needInitBasicUDFFunctions=false/needInitBasicUDFFunctions=true/' core/target/iginx-core-${VERSION}/conf/config.properties
+                  else
+                    echo "$RUNNER_OS is not supported"
+                    exit 1
                   fi
+                  cd ..
+                  chmod +x ".github/scripts/iginx/iginx_regression_udf_path.sh"
+                  ".github/scripts/iginx/iginx_regression_udf_path.sh"
+
+            - name: set client test context
+              uses: ./IGinX/.github/actions/context
+              with:
+                  work-name: restart-iginx-meta
+                  metadata: ${{ matrix.metadata }}
+
+            - name: set client test context
+              uses: ./IGinX/.github/actions/context
+              with:
+                  name: Pre Test Client Export File
+                  shell: bash
+                  run: |
+                      cd IGinX
+                      if [ "$RUNNER_OS" == "Linux" ]; then
+                        chmod +x ".github/scripts/test/cli/test_outfile.sh"
+                        ".github/scripts/test/cli/test_outfile.sh" ${{ matrix.DB-name }}
+                      elif [ "$RUNNER_OS" == "Windows" ]; then
+                        chmod +x ".github/scripts/test/cli/test_outfile_windows.sh"
+                        ".github/scripts/test/cli/test_outfile_windows.sh" ${{ matrix.DB-name }}
+                      elif [ "$RUNNER_OS" == "macOS" ]; then
+                        chmod +x ".github/scripts/test/cli/test_outfile_macos.sh"
+                        ".github/scripts/test/cli/test_outfile_macos.sh" ${{ matrix.DB-name }}
+                      fi
 
             - name: Clean UDFs
               if: always()
               shell: bash
               run: |
-                pwd
-                ls
-#                mkdir IGinX/test/src/test/resources/dataCleaning
-#                mv "test/src/test/resources/dataCleaning/zipcode_city.csv" "IGinX/test/src/test/resources/dataCleaning/zipcode_city.csv"
-#                mv web-Google2.csv IGinX/web-Google2.csv
-#                mv HIGGS.csv IGinX/HIGGS.csv
-                cd test/src/test/resources/polybench/udf
-                rm udaf_trainall.py
-                rm udsf_pagerank.py
-                
+                  pwd
+                  ls
+                  mkdir IGinX/test/src/test/resources/dataCleaning
+                  mv "test/src/test/resources/dataCleaning/zipcode_city.csv" "IGinX/test/src/test/resources/dataCleaning/zipcode_city.csv"
+                  mv web-Google2.csv IGinX/web-Google2.csv
+                  mv HIGGS.csv IGinX/HIGGS.csv
+                  cd test/src/test/resources/polybench/udf
+                  rm udaf_trainall.py
+                  rm udsf_pagerank.py
 
             - name: Start data cleaning
               shell: bash
               run: |
-                set -e
-                COMMAND2="SELECT count(a.zipcode) FROM uszip as a JOIN uszip as b ON a.zipcode = b.zipcode WHERE a.city <> b.city;"
-                SCRIPT_COMMAND="bash client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '{}'"
-                bash -c "chmod +x client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh"
-                output_file="${GITHUB_WORKSPACE}/output.txt"
-                # 清空 output_file
-                > $output_file
-                for i in {1..5}
-                do
-                if [ "$RUNNER_OS" = "Linux" ]; then
-                bash -c "echo '$COMMAND2' | xargs -0 -t -i ${SCRIPT_COMMAND}" > tmp.txt
-                elif [ "$RUNNER_OS" = "Windows" ]; then
-                bash -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.bat -e '$COMMAND2'" > tmp.txt
-                elif [ "$RUNNER_OS" = "macOS" ]; then
-                sh -c "echo '$COMMAND2' | xargs -0 -t -I F sh client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e 'F'" > tmp.txt
-                fi
-                cat tmp.txt
-                last_line=$(tail -n 1 tmp.txt)
-                echo "$last_line"
-                # 将最后一行写入 output.txt
-                echo "$last_line" >> ${output_file}
-                done
-                echo --------------------------------
-                cat ${output_file}
-                echo --------------------------------
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh"
+                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh"
 
             - name: Start sgd test
               shell: bash
               run: |
-                set -e
-                COMMAND3="select trainall(key,label,lepton_pt,lepton_eta,lepton_phi,missing_energy_magnitude,missing_energy_phi,jet1_pt,jet1_eta,jet1_phi,jet1_b_tag,jet2_pt,jet2_eta,jet2_phi,jet2_b_tag,jet3_pt,jet3_eta,jet3_phi,jet3_b_tag,jet4_pt,jet4_eta,jet4_phi,jet4_b_tag,m_jj,m_jjj,m_lv,m_jlv,m_bb,m_wbb,m_wwbb) from trainall;"
-                SCRIPT_COMMAND="bash client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '{}'"
-                output_file="${GITHUB_WORKSPACE}/output.txt"
-                bash -c "chmod +x client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh"
-                for i in {1..5}
-                do
-                if [ "$RUNNER_OS" = "Linux" ]; then
-                bash -c "echo '$COMMAND3' | xargs -0 -t -i ${SCRIPT_COMMAND}" > tmp.txt
-                elif [ "$RUNNER_OS" = "Windows" ]; then
-                bash -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.bat -e '$COMMAND3'" > tmp.txt
-                elif [ "$RUNNER_OS" = "macOS" ]; then
-                sh -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '$COMMAND3'" > tmp.txt
-                fi
-                cat tmp.txt
-                last_line=$(tail -n 1 tmp.txt)
-                # 将最后一行写入 output.txt
-                echo "$last_line" >> ${output_file}
-                done
-                echo --------------------------------
-                cat ${output_file}
-                echo --------------------------------
-
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
+                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
             - name: Start pagerank test
               shell: bash
               run: |
-                set -e
-                COMMAND3='select * from (select pagerank(key, fromnode, tonode) as pagerank from pagerank) order by pagerank desc limit 100;'
-                SCRIPT_COMMAND="bash client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '{}'"
-                bash -c "chmod +x client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh"
-                output_file="${GITHUB_WORKSPACE}/output.txt"
-                for i in {1..5}
-                do
-                if [ "$RUNNER_OS" = "Linux" ]; then
-                bash -c "echo '$COMMAND3' | xargs -0 -t -i ${SCRIPT_COMMAND}" > tmp.txt
-                elif [ "$RUNNER_OS" = "Windows" ]; then
-                bash -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.bat -e '$COMMAND3'" > tmp.txt
-                elif [ "$RUNNER_OS" = "macOS" ]; then
-                sh -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '$COMMAND3'" > tmp.txt
-                fi
-                cat tmp.txt
-                last_line=$(tail -n 1 tmp.txt)
-                # 将最后一行写入 output.txt
-                echo "$last_line" >> ${output_file}
-                done
-                echo --------------------------------
-                cat ${output_file}
-                echo --------------------------------
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
+                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"

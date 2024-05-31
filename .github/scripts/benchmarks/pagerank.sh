@@ -83,3 +83,11 @@ done
 echo --------------------------------
 cat ${output_file}
 echo --------------------------------
+
+if [ "$RUNNER_OS" = "Linux" ]; then
+  bash -c "echo 'clear data' | xargs -0 -t -i ${SCRIPT_COMMAND}"
+elif [ "$RUNNER_OS" = "Windows" ]; then
+  bash -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.bat -e 'clear data'"
+elif [ "$RUNNER_OS" = "macOS" ]; then
+  sh -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e 'clear data'"
+fi
