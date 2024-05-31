@@ -224,3 +224,15 @@ jobs:
               shell: bash
               run: |
                   mvn test -q -Dtest=TPCHRunner -DfailIfNoTests=false -P-format
+
+            - name: spark test
+              shell: bash
+              run: |
+                  pip install pyspark
+                if [ "$RUNNER_OS" == "Windows" ]; then
+                  python test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/spark/sgd.py
+                  python test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/spark/pagerank.py
+                else
+                  python3 test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/spark/sgd.py
+                  python3 test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/spark/pagerank.py
+                fi
