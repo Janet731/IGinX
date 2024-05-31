@@ -196,6 +196,10 @@ jobs:
               run: |
                 pwd
                 ls
+                mkdir IGinX/src/test/resources/dataCleaning
+                mv "test/src/test/resources/dataCleaning/zipcode_city.csv" "IGinX/test/src/test/resources/dataCleaning/zipcode_city.csv"
+                mv web-Google2.csv IGinX/web-Google2.csv
+                mv HIGGS.csv IGinX/HIGGS.csv
                 cd test/src/test/resources/polybench/udf
                 rm udaf_trainall.py
                 rm udsf_pagerank.py
@@ -224,10 +228,3 @@ jobs:
               run: |
                 chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
                 "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
-
-            - name: Show IGinX log
-              if: always()
-              shell: bash
-              run: |
-                cd IGinX
-                cat iginx-*.log
