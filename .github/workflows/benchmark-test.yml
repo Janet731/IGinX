@@ -196,7 +196,7 @@ jobs:
               run: |
                 pwd
                 ls
-                mkdir IGinX/src/test/resources/dataCleaning
+                mkdir IGinX/test/src/test/resources/dataCleaning
                 mv "test/src/test/resources/dataCleaning/zipcode_city.csv" "IGinX/test/src/test/resources/dataCleaning/zipcode_city.csv"
                 mv web-Google2.csv IGinX/web-Google2.csv
                 mv HIGGS.csv IGinX/HIGGS.csv
