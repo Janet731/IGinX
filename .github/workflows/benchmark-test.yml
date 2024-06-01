@@ -241,3 +241,9 @@ jobs:
                   python3 test/src/test/resources/polybench/spark/sgd.py
                   python3 test/src/test/resources/polybench/spark/pagerank.py
                 fi
+
+            - name: Show IGinX log
+              if: always()
+              shell: bash
+              run: |
+                  cat iginx-*.log
