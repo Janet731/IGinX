@@ -169,8 +169,8 @@ jobs:
                     exit 1
                   fi
                   cd ..
-                  chmod +x ".github/scripts/iginx/iginx_regression_udf_path.sh"
-                  ".github/scripts/iginx/iginx_regression_udf_path.sh"
+                  chmod +x ".github/scripts/iginx/iginx_regression_udf_path2.sh"
+                  ".github/scripts/iginx/iginx_regression_udf_path2.sh"
 
             - name: set client test context
               uses: ./IGinX/.github/actions/context
