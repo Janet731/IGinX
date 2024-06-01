@@ -132,7 +132,7 @@ jobs:
               shell: bash
               run: |
                   chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/killDB.sh"
-                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/killDB.sh ${{ matrix.DB-name }}"
+                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/killDB.sh" ${{ matrix.DB-name }}
 
             - name: Rerun ZooKeeper
               uses: ./.github/actions/zookeeperRunner

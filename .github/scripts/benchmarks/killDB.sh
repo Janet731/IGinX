@@ -21,8 +21,15 @@ if [ -z "$DB_NAME" ]; then
     exit 1
 fi
 
-# 获取对应的端口列表
-PORTS=${db_ports[$DB_NAME]}
+# 查找数据库对应的端口
+PORTS=""
+for entry in "${db_ports[@]}"; do
+    IFS=":" read -r name ports <<< "$entry"
+    if [ "$name" == "$DB_NAME" ]; then
+        PORTS=$ports
+        break
+    fi
+done
 
 # 检查是否有对应的端口
 if [ -z "$PORTS" ]; then
