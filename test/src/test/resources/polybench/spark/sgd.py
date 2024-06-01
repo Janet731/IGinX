@@ -21,16 +21,24 @@ spark = SparkSession.builder.appName("sgh")\
 
 start = time.time()
 # 从文件中读入数据
-data = spark.read.csv('HIGGS.csv', header=True, inferSchema=True)
+data = spark.read.csv('HIGGS.csv', header=False, inferSchema=True)
 end = time.time()
 print('Read data time: ', end - start)
 
+columns = [
+      "key", "label", "lepton_pT", "lepton_eta", "lepton_phi", "missing_energy_magnitude",
+      "missing_energy_phi", "jet_1_pt", "jet_1_eta", "jet_1_phi", "jet_1_b_tag",
+      "jet_2_pt", "jet_2_eta", "jet_2_phi", "jet_2_b_tag", "jet_3_pt", "jet_3_eta",
+      "jet_3_phi", "jet_3_b_tag", "jet_4_pt", "jet_4_eta", "jet_4_phi", "jet_4_b_tag",
+      "m_jj", "m_jjj", "m_lv", "m_jlv", "m_bb", "m_wbb", "m_wwbb"
+]
+data = data.toDF(*columns)
+data.show(5)
+
 start = time.time()
-# label,lepton  pT,lepton  eta,lepton  phi,missing energy magnitude,missing energy phi,jet 1 pt,jet 1 eta,jet 1 phi,
-# jet 1 b-tag,jet 2 pt,jet 2 eta,jet 2 phi,jet 2 b-tag,jet 3 pt,jet 3 eta,jet 3 phi,jet 3 b-tag,jet 4 pt,jet 4 eta,
-# jet 4 phi,jet 4 b-tag,m_jj,m_jjj,m_lv,m_jlv,m_bb,m_wbb,m_wwbb
+
 # 这里要去掉'label'和'weight'两列
-X = (data.drop('label')).toPandas()
+X = (data.drop('label').drop('key')).toPandas()
 y = (data.toPandas())['label']
 print(y.sum()/y.count())
 

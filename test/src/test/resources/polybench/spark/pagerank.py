@@ -11,7 +11,13 @@ spark = SparkSession.builder.appName("pagerank")\
 
 start = time.time()
 # graph.txt file has columns 'src' and 'dst' representing edges
-edges = spark.read.csv("web-Google2.csv", header=True, inferSchema=True).toPandas()
+edges = spark.read.csv("web-Google2.csv", header=False, inferSchema=True)
+columns = [
+    "key", "fromnode", "tonode"
+]
+edges = edges.toDF(*columns)
+edges = (edges.drop('key')).toPandas()
+edges.head(5)
 # convert to list(tuple)
 start1 = time.time()
 edges = [tuple(x) for x in edges.values]
