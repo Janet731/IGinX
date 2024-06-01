@@ -229,11 +229,9 @@ jobs:
               if: always()
               shell: bash
               run: |
-                  pip install pyspark scikit-learn networkx
+                  pip install pyspark
                   if [ "$RUNNER_OS" == "Windows" ]; then
-                    python test/src/test/resources/polybench/spark/sgd.py
-                    python test/src/test/resources/polybench/spark/pagerank.py
+                    python test/src/test/resources/polybench/spark/TPCH.py
                   else
-                    python3 test/src/test/resources/polybench/spark/sgd.py
-                    python3 test/src/test/resources/polybench/spark/pagerank.py
+                    python3 test/src/test/resources/polybench/spark/TPCH.py
                   fi
