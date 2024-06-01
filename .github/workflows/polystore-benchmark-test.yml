@@ -226,9 +226,10 @@ jobs:
                   mvn test -q -Dtest=TPCHRunner -DfailIfNoTests=false -P-format
 
             - name: spark test
+              if: always()
               shell: bash
               run: |
-                  pip install pyspark
+                  pip install pyspark scikit-learn networkx
                   if [ "$RUNNER_OS" == "Windows" ]; then
                     python test/src/test/resources/polybench/spark/sgd.py
                     python test/src/test/resources/polybench/spark/pagerank.py
