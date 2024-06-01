@@ -203,13 +203,13 @@ jobs:
                   pwd
                   ls
                   mkdir IGinX/test/src/test/resources/dataCleaning
-                  mv "test/src/test/resources/dataCleaning/zipcode_city.csv" "IGinX/test/src/test/resources/dataCleaning/zipcode_city.csv"
-                  mv web-Google2.csv IGinX/web-Google2.csv
-                  mv HIGGS.csv IGinX/HIGGS.csv
+                  cp "test/src/test/resources/dataCleaning/zipcode_city.csv" "IGinX/test/src/test/resources/dataCleaning/zipcode_city.csv"
+                  cp web-Google2.csv IGinX/web-Google2.csv
+                  cp HIGGS.csv IGinX/HIGGS.csv
                   mkdir IGinX/test/src/test/resources/polybench
                   mkdir IGinX/test/src/test/resources/polybench/udf
-                  mv "test/src/test/resources/polybench/udf/udaf_trainall.py" "IGinX/test/src/test/resources/polybench/udf/udaf_trainall.py"
-                  mv "test/src/test/resources/polybench/udf/udsf_pagerank.py" "IGinX/test/src/test/resources/polybench/udf/udsf_pagerank.py"
+                  cp "test/src/test/resources/polybench/udf/udaf_trainall.py" "IGinX/test/src/test/resources/polybench/udf/udaf_trainall.py"
+                  cp "test/src/test/resources/polybench/udf/udsf_pagerank.py" "IGinX/test/src/test/resources/polybench/udf/udsf_pagerank.py"
 
             - name: Start data cleaning
               shell: bash
