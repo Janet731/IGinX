@@ -206,6 +206,8 @@ jobs:
                   mv "test/src/test/resources/dataCleaning/zipcode_city.csv" "IGinX/test/src/test/resources/dataCleaning/zipcode_city.csv"
                   mv web-Google2.csv IGinX/web-Google2.csv
                   mv HIGGS.csv IGinX/HIGGS.csv
+                  mv "test/src/test/resources/polybench/udf/udaf_trainall.py" "IGinX/test/src/test/resources/polybench/udf/udaf_trainall.py"
+                  mv "test/src/test/resources/polybench/udf/udsf_pagerank.py" "IGinX/test/src/test/resources/polybench/udf/udsf_pagerank.py"
                   cd test/src/test/resources/polybench/udf
                   rm udaf_trainall.py
                   rm udsf_pagerank.py
@@ -224,5 +226,5 @@ jobs:
             - name: Start pagerank test
               shell: bash
               run: |
-                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
-                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
+                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"

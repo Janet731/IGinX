@@ -8,6 +8,10 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score
 import time
 
+spark = SparkSession.builder.appName("Check Spark Version").getOrCreate()
+print("Spark version:", spark.version)
+spark.stop()
+
 # 创建Spark会话
 spark = SparkSession.builder.appName("sgh")\
       .master("local[*]").config("spark.driver.memory","5g")\
@@ -17,7 +21,7 @@ spark = SparkSession.builder.appName("sgh")\
 
 start = time.time()
 # 从文件中读入数据
-data = spark.read.csv('HIGGS2.csv', header=True, inferSchema=True)
+data = spark.read.csv('HIGGS.csv', header=True, inferSchema=True)
 end = time.time()
 print('Read data time: ', end - start)
 
