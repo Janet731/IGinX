@@ -1,0 +1,126 @@
+name: Run TPC-H Queries with Spark
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  setup-and-run-tpch:
+    runs-on: ubuntu-latest
+
+    services:
+      hadoop:
+        image: bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8
+        ports:
+          - 9870:9870
+          - 9000:9000
+        options: --name hadoop -e CLUSTER_NAME=test -e HDFS_CONF_dfs_replication=1
+      hadoop-datanode:
+        image: bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8
+        options: --name hadoop-datanode --link hadoop:namenode
+      spark:
+        image: bde2020/spark-master:2.4.0-hadoop2.7
+        ports:
+          - 8080:8080
+        options: --name spark --link hadoop:namenode
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-8-jdk wget hadoop-client
+
+      - name: Install Spark
+        run: |
+          wget http://archive.apache.org/dist/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz
+          tar xvf spark-2.4.0-bin-hadoop2.7.tgz
+          export SPARK_HOME=$(pwd)/spark-2.4.0-bin-hadoop2.7
+          export PATH=$SPARK_HOME/bin:$PATH
+
+      - name: Generate TPC-H data
+        run: |
+          python3 thu_cloud_download.py \
+          -l https://cloud.tsinghua.edu.cn/d/740c158819bc4759a36e/ \
+          -s  "."
+          cd tpchdata
+          # 目标文件夹路径
+          destination_folder="../tpch_data"
+        
+          # 确保目标文件夹存在，如果不存在则创建
+          mkdir -p "$destination_folder"
+        
+          # 将所有*.tbl文件移动到目标文件夹
+          mv *.tbl "$destination_folder/"
+          cd "$destination_folder"
+    
+          ls -a
+          pwd
+          echo "文件移动完成"
+
+      - name: Upload TPC-H data to HDFS
+        run: |
+          hdfs dfs -mkdir -p /tpch_data
+          hdfs dfs -put *.tbl /tpch_data/
+
+      - name: Run TPC-H queries
+        run: |
+          export SPARK_HOME=$(pwd)/spark-2.4.0-bin-hadoop2.7
+          export PATH=$SPARK_HOME/bin:$PATH
+          $SPARK_HOME/bin/spark-shell --master spark://spark:7077 <<EOF
+          import org.apache.spark.sql.SparkSession
+          
+          val spark = SparkSession.builder()
+            .appName("TPC-H Queries")
+            .config("spark.master", "spark://spark:7077")
+            .getOrCreate()
+          
+          // Load TPC-H data from HDFS
+          val dfCustomer = spark.read.format("csv").option("delimiter", "|").option("inferSchema", "true").load("hdfs://namenode:9000/tpch_data/customer.tbl")
+          val dfOrders = spark.read.format("csv").option("delimiter", "|").option("inferSchema", "true").load("hdfs://namenode:9000/tpch_data/orders.tbl")
+          val dfLineitem = spark.read.format("csv").option("delimiter", "|").option("inferSchema", "true").load("hdfs://namenode:9000/tpch_data/lineitem.tbl")
+          
+          // Register DataFrames as temporary views
+          dfCustomer.createOrReplaceTempView("customer")
+          dfOrders.createOrReplaceTempView("orders")
+          dfLineitem.createOrReplaceTempView("lineitem")
+          
+          // Example TPC-H Query 1 with timing
+          val query1 = """
+            SELECT
+              l_returnflag,
+              l_linestatus,
+              sum(l_quantity) as sum_qty,
+              sum(l_extendedprice) as sum_base_price,
+              sum(l_extendedprice * (1 - l_discount)) as sum_disc_price,
+              sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,
+              avg(l_quantity) as avg_qty,
+              avg(l_extendedprice) as avg_price,
+              avg(l_discount) as avg_disc,
+              count(*) as count_order
+            FROM
+              lineitem
+            WHERE
+              l_shipdate <= DATE '1998-12-01' - INTERVAL '90' DAY
+            GROUP BY
+              l_returnflag,
+              l_linestatus
+            ORDER BY
+              l_returnflag,
+              l_linestatus
+          """
+          
+          val startTime = System.nanoTime()
+          val result = spark.sql(query1)
+          result.show()
+          val endTime = System.nanoTime()
+          
+          val duration = (endTime - startTime) / 1e9d
+          println(s"Query execution time: $duration seconds")
+          
+          spark.stop()
+          EOF
