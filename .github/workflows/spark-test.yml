@@ -33,7 +33,15 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y openjdk-8-jdk wget hadoop-client
+          sudo apt-get install -y openjdk-8-jdk wget
+
+      - name: Install Hadoop
+        run: |
+          wget https://downloads.apache.org/hadoop/common/hadoop-3.3.1/hadoop-3.3.1.tar.gz
+          tar -xzf hadoop-3.3.1.tar.gz
+          sudo mv hadoop-3.3.1 /usr/local/hadoop
+          export HADOOP_HOME=/usr/local/hadoop
+          export PATH=$HADOOP_HOME/bin:$PATH
 
       - name: Install Spark
         run: |
