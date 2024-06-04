@@ -52,6 +52,7 @@ jobs:
 
       - name: Generate TPC-H data
         run: |
+          pip install requests tqdm
           python3 thu_cloud_download.py \
           -l https://cloud.tsinghua.edu.cn/d/740c158819bc4759a36e/ \
           -s  "."
