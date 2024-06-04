@@ -37,9 +37,9 @@ jobs:
 
       - name: Install Hadoop
         run: |
-          wget https://downloads.apache.org/hadoop/common/hadoop-3.3.1/hadoop-3.3.1.tar.gz
-          tar -xzf hadoop-3.3.1.tar.gz
-          sudo mv hadoop-3.3.1 /usr/local/hadoop
+          wget https://downloads.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
+          tar -xzf hadoop-3.3.6.tar.gz
+          sudo mv hadoop-3.3.6 /usr/local/hadoop
           export HADOOP_HOME=/usr/local/hadoop
           export PATH=$HADOOP_HOME/bin:$PATH
 
