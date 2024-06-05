@@ -63,7 +63,7 @@ jobs:
             - name: Run DB
               uses: ./.github/actions/dbRunner
               with:
-                  DB-name: "Parquet"
+                  DB-name: "MongoDB"
 
             - name: Run PostgreSQL
               shell: bash
@@ -71,8 +71,54 @@ jobs:
                   chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/postgres.sh"
                   "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/postgres.sh"
 
-            - name: Run MongoDB
+            - name: Run IoTDB
               shell: bash
               run: |
-                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/mongodb.sh"
-                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/mongodb.sh"
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/iotdb12.sh"
+                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/iotdb12.sh"
+                
+            - name: Install IGinX with Maven
+              shell: bash
+              run: |
+                mvn clean package -DskipTests -P-format -q
+
+            - name: Change IGinX config
+              uses: ./.github/actions/confWriter
+              with:
+                DB-name: "MongoDB"
+                Set-Filter-Fragment-OFF: "true"
+
+          # start udf path test first to avoid being effected
+            - name: Start IGinX
+              uses: ./.github/actions/iginxRunner
+              with:
+                version: ${VERSION}
+                if-test-udf: "true"
+
+            - name: set client test context
+              uses: ./.github/actions/context
+              with:
+                work-name: restart-iginx-meta
+                metadata: ${{ matrix.metadata }}
+
+            - name: set client test context
+              uses: ./.github/actions/context
+              with:
+                DB-name: "MongoDB"
+                shell: client-before
+
+            - name: Start storing data
+              if: always()
+              shell: bash
+              run: |
+                mvn test -q -Dtest=GavelDataInsertionIT -DfailIfNoTests=false -P-format
+                cd apache-iotdb-0.12.6-server-bin/tools
+                ./import-csv.sh -h 127.0.0.1 -p 6667 -u root -pw root -f ${GITHUB_WORKSPACE}/Polystore-utils/gavel/bid.csv
+                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/loadGavel.sh"
+                "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/loadGavel.sh"
+
+            - name: Run session test
+              if: always()
+              shell: bash
+              run: |
+                mvn test -q -Dtest=GavelRunner -DfailIfNoTests=false -P-format
