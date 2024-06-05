@@ -26,7 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class GavelDataInsertionIT {
-  private static final String dataPath = System.getProperty("user.dir") + "/Polystore-utils/gavel";
+  private static final String dataPath = System.getProperty("user.dir") + "../Polystore-utils/gavel";
 
   public void GavelDataInsertionIT() {}
   @Test
