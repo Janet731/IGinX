@@ -37,7 +37,6 @@ jobs:
                   sudo apt-get install -y openjdk-8-jdk wget
 
             - name: Install Hadoop
-              shell: bash
               run: |
                   wget https://downloads.apache.org/hadoop/common/hadoop-2.10.2/hadoop-2.10.2.tar.gz
                   tar -xzf hadoop-2.10.2.tar.gz
@@ -48,7 +47,6 @@ jobs:
                   ls
 
             - name: Set up Hadoop environment variables
-              shell: bash
               run: |
                   echo "HADOOP_HOME=/usr/local/hadoop" >> $GITHUB_ENV
                   echo "PATH=\$PATH:/usr/local/hadoop/bin" >> $GITHUB_ENV
@@ -60,9 +58,9 @@ jobs:
                   echo "YARN_HOME=/usr/local/hadoop" >> $GITHUB_ENV
 
             - name: Check HDFS command
-              shell: bash
+              shell: sh
               run: |
-                  source $GITHUB_ENV
+                  . $GITHUB_ENV
                   echo "HADOOP_HOME=$HADOOP_HOME"
                   echo "PATH=$PATH"
                   hdfs version

@@ -1,4 +1,4 @@
-name: PolyStore Benchmark Tests
+name: Gavel Benchmark Tests
 
 on:
     push:
@@ -11,7 +11,7 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    PolyStore-Benchmark-Test:
+    Gavel-Benchmark-Test:
         timeout-minutes: 35
         strategy:
             fail-fast: false
