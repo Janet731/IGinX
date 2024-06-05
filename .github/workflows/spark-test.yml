@@ -31,11 +31,13 @@ jobs:
               uses: actions/checkout@v2
 
             - name: Install dependencies
+              shell: bash
               run: |
                   sudo apt-get update
                   sudo apt-get install -y openjdk-8-jdk wget
 
             - name: Install Hadoop
+              shell: bash
               run: |
                   wget https://downloads.apache.org/hadoop/common/hadoop-2.10.2/hadoop-2.10.2.tar.gz
                   tar -xzf hadoop-2.10.2.tar.gz
@@ -46,6 +48,7 @@ jobs:
                   ls
 
             - name: Set up Hadoop environment variables
+              shell: bash
               run: |
                   echo "HADOOP_HOME=/usr/local/hadoop" >> $GITHUB_ENV
                   echo "PATH=\$PATH:/usr/local/hadoop/bin" >> $GITHUB_ENV
@@ -57,6 +60,7 @@ jobs:
                   echo "YARN_HOME=/usr/local/hadoop" >> $GITHUB_ENV
 
             - name: Check HDFS command
+              shell: bash
               run: |
                   source $GITHUB_ENV
                   echo "HADOOP_HOME=$HADOOP_HOME"
@@ -64,6 +68,7 @@ jobs:
                   hdfs version
 
             - name: Install Spark
+              shell: bash
               run: |
                   wget http://archive.apache.org/dist/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz
                   tar xvf spark-2.4.0-bin-hadoop2.7.tgz
@@ -71,6 +76,7 @@ jobs:
                   export PATH=$SPARK_HOME/bin:$PATH
 
             - name: Generate TPC-H data
+              shell: bash
               run: |
                   pip install requests tqdm
                   python3 thu_cloud_download.py \
@@ -92,11 +98,13 @@ jobs:
                   echo "文件移动完成"
 
             - name: Upload TPC-H data to HDFS
+              shell: bash
               run: |
                   hdfs dfs -mkdir -p /tpch_data
                   hdfs dfs -put *.tbl /tpch_data/
 
             - name: Run TPC-H queries
+              shell: bash
               run: |
                   export SPARK_HOME=$(pwd)/spark-2.4.0-bin-hadoop2.7
                   export PATH=$SPARK_HOME/bin:$PATH
