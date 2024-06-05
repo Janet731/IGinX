@@ -53,7 +53,7 @@ jobs:
               run: |
                 cd Polystore-utils
                 mkdir gavel
-                mvn clean compile exec:java -Dexec.mainClass="cn.edu.tsinghua.benchmark.GenerateData" -X
+                mvn clean compile exec:java -Dexec.mainClass="cn.edu.tsinghua.benchmark.GenerateData"
                 cd gavel
                 ls
 

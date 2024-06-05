@@ -110,6 +110,8 @@ public class GavelRunner {
       clusterInfo = conn.executeSql("SHOW CLUSTER INFO;").getResultInString(false, "");
       System.out.println(clusterInfo);
       // Long startTime;
+      String columns = conn.executeSql("SHOW COLUMNS;").getResultInString(false, "");
+      System.out.println(columns);
 
       // 关闭会话
       conn.closeSession();

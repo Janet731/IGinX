@@ -40,16 +40,11 @@ jobs:
                   wget https://downloads.apache.org/hadoop/common/hadoop-2.10.2/hadoop-2.10.2.tar.gz
                   tar -xzf hadoop-2.10.2.tar.gz
                   sudo mv hadoop-2.10.2 /usr/local/hadoop
-                  cd /usr/local/hadoop
-                  ls
-                  cd bin
-                  ls
 
             - name: Set up Hadoop environment variables
-              shell: sh
               run: |
                   echo "HADOOP_HOME=/usr/local/hadoop" >> $GITHUB_ENV
-                  echo "PATH=\$PATH:/usr/local/hadoop/bin" >> $GITHUB_ENV
+                  echo "PATH=$PATH:/usr/local/hadoop/bin" >> $GITHUB_ENV
                   echo "HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop" >> $GITHUB_ENV
                   echo "HADOOP_INSTALL=/usr/local/hadoop" >> $GITHUB_ENV
                   echo "HADOOP_MAPRED_HOME=/usr/local/hadoop" >> $GITHUB_ENV
@@ -58,72 +53,59 @@ jobs:
                   echo "YARN_HOME=/usr/local/hadoop" >> $GITHUB_ENV
 
             - name: Check HDFS command
-              shell: sh
               run: |
-                  . $GITHUB_ENV
+                  source $GITHUB_ENV
                   echo "HADOOP_HOME=$HADOOP_HOME"
                   echo "PATH=$PATH"
                   hdfs version
 
             - name: Install Spark
-              shell: bash
               run: |
                   wget http://archive.apache.org/dist/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz
                   tar xvf spark-2.4.0-bin-hadoop2.7.tgz
-                  export SPARK_HOME=$(pwd)/spark-2.4.0-bin-hadoop2.7
-                  export PATH=$SPARK_HOME/bin:$PATH
+                  echo "SPARK_HOME=$(pwd)/spark-2.4.0-bin-hadoop2.7" >> $GITHUB_ENV
+                  echo "PATH=$SPARK_HOME/bin:$PATH" >> $GITHUB_ENV
 
             - name: Generate TPC-H data
-              shell: bash
               run: |
                   pip install requests tqdm
-                  python3 thu_cloud_download.py \
-                  -l https://cloud.tsinghua.edu.cn/d/740c158819bc4759a36e/ \
-                  -s  "."
+                  python3 thu_cloud_download.py -l https://cloud.tsinghua.edu.cn/d/740c158819bc4759a36e/ -s  "."
                   cd tpchdata
-                  # 目标文件夹路径
                   destination_folder="../tpch_data"
-
-                  # 确保目标文件夹存在，如果不存在则创建
                   mkdir -p "$destination_folder"
-
-                  # 将所有*.tbl文件移动到目标文件夹
                   mv *.tbl "$destination_folder/"
                   cd "$destination_folder"
-
                   ls -a
                   pwd
                   echo "文件移动完成"
 
             - name: Upload TPC-H data to HDFS
-              shell: bash
               run: |
+                  source $GITHUB_ENV
                   hdfs dfs -mkdir -p /tpch_data
                   hdfs dfs -put *.tbl /tpch_data/
 
             - name: Run TPC-H queries
-              shell: bash
               run: |
-                  export SPARK_HOME=$(pwd)/spark-2.4.0-bin-hadoop2.7
-                  export PATH=$SPARK_HOME/bin:$PATH
+                  source $GITHUB_ENV
                   $SPARK_HOME/bin/spark-shell --master spark://spark:7077 <<EOF
                   import org.apache.spark.sql.SparkSession
-
+                  
                   val spark = SparkSession.builder()
                     .appName("TPC-H Queries")
                     .config("spark.master", "spark://spark:7077")
                     .getOrCreate()
-
+                  
                   // Load TPC-H data from HDFS
                   val dfCustomer = spark.read.format("csv").option("delimiter", "|").option("inferSchema", "true").load("hdfs://namenode:9000/tpch_data/customer.tbl")
                   val dfOrders = spark.read.format("csv").option("delimiter", "|").option("inferSchema", "true").load("hdfs://namenode:9000/tpch_data/orders.tbl")
                   val dfLineitem = spark.read.format("csv").option("delimiter", "|").option("inferSchema", "true").load("hdfs://namenode:9000/tpch_data/lineitem.tbl")
-
+                  
                   // Register DataFrames as temporary views
                   dfCustomer.createOrReplaceTempView("customer")
                   dfOrders.createOrReplaceTempView("orders")
                   dfLineitem.createOrReplaceTempView("lineitem")
-
+                  
                   // Example TPC-H Query 1 with timing
                   val query1 = """
                     SELECT
@@ -148,14 +130,14 @@ jobs:
                       l_returnflag,
                       l_linestatus
                   """
-
+                  
                   val startTime = System.nanoTime()
                   val result = spark.sql(query1)
                   result.show()
                   val endTime = System.nanoTime()
-
+                  
                   val duration = (endTime - startTime) / 1e9d
                   println(s"Query execution time: $duration seconds")
-
+                  
                   spark.stop()
                   EOF
