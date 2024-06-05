@@ -43,7 +43,7 @@ jobs:
                   -s  "."
                 fi
                 pip install pydbgen
-                pip uninstall Faker
+                pip uninstall -y Faker
                 pip install Faker==2.0.0
                 cd Polystore-utils
                 ls
