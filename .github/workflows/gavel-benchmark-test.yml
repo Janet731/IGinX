@@ -1,0 +1,81 @@
+name: PolyStore Benchmark Tests
+
+on:
+    push:
+        branches: [feat-benchmark]
+
+env:
+    VERSION: 0.6.0-SNAPSHOT
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    PolyStore-Benchmark-Test:
+        timeout-minutes: 35
+        strategy:
+            fail-fast: false
+            matrix:
+                java: [8]
+                python-version: ["3.9"]
+                os: [ubuntu-latest, macOS-13, windows-latest]
+                metadata: [zookeeper]
+        runs-on: ${{ matrix.os }}
+
+        steps:
+            - uses: actions/checkout@v4
+            - name: Environment dependence
+              uses: ./.github/actions/dependence
+              with:
+                  python-version: ${{ matrix.python-version }}
+                  java: ${{ matrix.java }}
+
+            - name: download gavel data generator
+              shell: bash
+              run: |
+                if [ "$RUNNER_OS" == "Windows" ]; then
+                  python thu_cloud_download.py \
+                  -l https://cloud.tsinghua.edu.cn/d/59e291cf410a479dba46/ \
+                  -s  "."
+                else
+                  python3 thu_cloud_download.py \
+                  -l https://cloud.tsinghua.edu.cn/d/59e291cf410a479dba46/ \
+                  -s  "."
+                fi
+                pip install pydbgen
+                pip uninstall Faker
+                pip install Faker==2.0.0
+                cd Polystore-utils
+                ls
+
+            - name: Compile GenerateData.java
+              run: |
+                mkdir -p build
+                javac -d build Polystore-utils/src/main/java/cn/edu/tsinghua/benchmark/GenerateData.java
+
+            - name: Run GenerateData main function
+              run: |
+                mkdir gavel
+                java -cp build cn.edu.tsinghua.benchmark.GenerateData
+                cd gavel
+                ls
+
+            - name: Run ZooKeeper
+              uses: ./.github/actions/zookeeperRunner
+
+            - name: Run DB
+              uses: ./.github/actions/dbRunner
+              with:
+                  DB-name: "Parquet"
+
+            - name: Run PostgreSQL
+              shell: bash
+              run: |
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/postgres.sh"
+                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/postgres.sh"
+
+            - name: Run MongoDB
+              shell: bash
+              run: |
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/mongodb.sh"
+                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/mongodb.sh"

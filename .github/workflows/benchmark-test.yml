@@ -102,17 +102,17 @@ jobs:
               run: |
                   chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
                   "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
-                
+
             - name: Evaluation
               shell: bash
               run: |
-                pwd
-                ls
-                if [ "$RUNNER_OS" == "Windows" ]; then
-                  python test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/regression.py
-                else
-                  python3 test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/regression.py
-                fi
+                  pwd
+                  ls
+                  if [ "$RUNNER_OS" == "Windows" ]; then
+                    python test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/regression.py
+                  else
+                    python3 test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/regression.py
+                  fi
 
             - name: Show IGinX log
               if: always()
