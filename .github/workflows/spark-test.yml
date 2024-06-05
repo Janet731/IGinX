@@ -42,8 +42,7 @@ jobs:
                   sudo mv hadoop-2.10.2 /usr/local/hadoop
                   cd /usr/local/hadoop
                   ls
-                  echo "-----------------------------"
-                  cd hadoop-2.10.2
+                  cd bin
                   ls
 
             - name: Set up Hadoop environment variables
