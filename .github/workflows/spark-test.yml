@@ -40,6 +40,11 @@ jobs:
                   wget https://downloads.apache.org/hadoop/common/hadoop-2.10.2/hadoop-2.10.2.tar.gz
                   tar -xzf hadoop-2.10.2.tar.gz
                   sudo mv hadoop-2.10.2 /usr/local/hadoop
+                  cd /usr/local/hadoop
+                  ls
+                  echo "-----------------------------"
+                  cd hadoop-2.10.2
+                  ls
 
             - name: Set up Hadoop environment variables
               run: |
