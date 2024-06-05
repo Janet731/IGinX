@@ -82,7 +82,7 @@ jobs:
             - name: Wait for Hadoop to start
               run: |
                   echo "Waiting for Hadoop to start..."
-                  for i in {1..10}; do
+                  for i in {1..20}; do
                     hdfs dfs -ls / || true
                     if [ $? -eq 0 ]; then
                       echo "Hadoop is up and running."
@@ -95,9 +95,9 @@ jobs:
             - name: Upload TPC-H data to HDFS
               run: |
                   source $GITHUB_ENV
-                  hdfs dfs -mkdir -p /tpch_data
-                  hdfs dfs -put *.tbl /tpch_data/
-                  hdfs dfs -ls /tpch_data
+                  hdfs dfs -mkdir -p /tpchData
+                  hdfs dfs -put tpch_data/*.tbl /tpchData/
+                  hdfs dfs -ls /tpchData
 
             - name: Run TPC-H queries
               run: |
@@ -111,9 +111,9 @@ jobs:
                     .getOrCreate()
                   
                   // Load TPC-H data from HDFS
-                  val dfCustomer = spark.read.format("csv").option("delimiter", "|").option("inferSchema", "true").load("hdfs://namenode:9000/tpch_data/customer.tbl")
-                  val dfOrders = spark.read.format("csv").option("delimiter", "|").option("inferSchema", "true").load("hdfs://namenode:9000/tpch_data/orders.tbl")
-                  val dfLineitem = spark.read.format("csv").option("delimiter", "|").option("inferSchema", "true").load("hdfs://namenode:9000/tpch_data/lineitem.tbl")
+                  val dfCustomer = spark.read.format("csv").option("delimiter", "|").option("inferSchema", "true").load("hdfs://namenode:9000/tpchData/customer.tbl")
+                  val dfOrders = spark.read.format("csv").option("delimiter", "|").option("inferSchema", "true").load("hdfs://namenode:9000/tpchData/orders.tbl")
+                  val dfLineitem = spark.read.format("csv").option("delimiter", "|").option("inferSchema", "true").load("hdfs://namenode:9000/tpchData/lineitem.tbl")
                   
                   // Register DataFrames as temporary views
                   dfCustomer.createOrReplaceTempView("customer")
