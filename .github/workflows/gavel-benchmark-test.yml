@@ -48,15 +48,12 @@ jobs:
                 cd Polystore-utils
                 ls
 
-            - name: Compile GenerateData.java
-              run: |
-                mkdir -p build
-                javac -d build Polystore-utils/src/main/java/cn/edu/tsinghua/benchmark/GenerateData.java
 
             - name: Run GenerateData main function
               run: |
+                cd Polystore-utils
                 mkdir gavel
-                java -cp build cn.edu.tsinghua.benchmark.GenerateData
+                mvn clean compile exec:java -Dexec.mainClass="cn.edu.tsinghua.benchmark.GenerateData" -X
                 cd gavel
                 ls
 
