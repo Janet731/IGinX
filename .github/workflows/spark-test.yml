@@ -79,11 +79,17 @@ jobs:
                   pwd
                   echo "文件移动完成"
 
+            - name: Wait for Hadoop to start
+              run: |
+                  echo "Waiting for Hadoop to start..."
+                  sleep 60
+
             - name: Upload TPC-H data to HDFS
               run: |
                   source $GITHUB_ENV
                   hdfs dfs -mkdir -p /tpch_data
                   hdfs dfs -put *.tbl /tpch_data/
+                  hdfs dfs -ls /tpch_data
 
             - name: Run TPC-H queries
               run: |
