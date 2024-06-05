@@ -71,6 +71,9 @@ jobs:
                   chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/postgres.sh"
                   "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/postgres.sh"
 
+            - name: Setup DB
+              uses: ./.github/actions/setup/iotdb12
+
             - name: Run IoTDB
               shell: bash
               run: |

@@ -79,7 +79,8 @@ public class TPCHRunner {
       conn.openSession();
 
       // 输出所有存储引擎
-      String clusterInfo = conn.executeSql("SHOW CLUSTER INFO;").getResultInString(false, "");
+      String clusterInfo = conn.executeSql("SHOW CLUSTER INFO;").getResultInString(false,
+ "");
       System.out.println(clusterInfo);
 
       // 添加存储引擎
@@ -109,7 +110,7 @@ public class TPCHRunner {
       System.out.println(clusterInfo);
       // Long startTime;
       // 13有问题
-      List<Integer> queryIds = Arrays.asList(1, 2, 3, 5, 6, 9, 10, 17, 18, 19, 20);
+      List<Integer> queryIds = Arrays.asList(1, 2, 3, 5, 6, 9, 10, 13, 16, 17, 18, 19, 20);
       for (int queryId : queryIds) {
         // read from sql file
         String sqlString =
