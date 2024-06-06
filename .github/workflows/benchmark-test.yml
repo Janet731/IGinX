@@ -110,7 +110,6 @@ jobs:
                 git clone https://github.com/IGinX-THU/IGinX.git
                 cd IGinX
                 mvn clean package -DskipTests -P-format
-                rm 
 
             - name: Stop ZooKeeper
               uses: ./.github/actions/zookeeperRunner
