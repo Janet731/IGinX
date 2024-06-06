@@ -25,7 +25,7 @@ param=$1
 # 使用参数
 echo "The parameter is: $param"
 
-if param == "1"; then
+if [ "$param" = "1" ]; then
 
   if [ "$RUNNER_OS" = "Windows" ]; then
     python thu_cloud_download.py \

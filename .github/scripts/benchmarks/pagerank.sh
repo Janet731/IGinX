@@ -22,7 +22,7 @@ param=$1
 # 使用参数
 echo "The parameter is: $param"
 
-if param == "1"; then
+if [ "$param" = "1" ]; then
   # 从网站下载数据
   if [ "$RUNNER_OS" = "Windows" ]; then
     curl -O https://snap.stanford.edu/data/web-Google.txt.gz
