@@ -1,5 +1,8 @@
 #!/bin/sh
 
+rm ./core/target/iginx-core-0.6.0-SNAPSHOT/udf_funcs/python_scripts/udaf_trainall.py
+rm ./core/target/iginx-core-0.6.0-SNAPSHOT/udf_funcs/python_scripts/udsf_pagerank.py
+
 cd IGinX
 pwd
 set -e
