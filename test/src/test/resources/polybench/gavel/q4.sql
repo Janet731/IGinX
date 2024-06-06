@@ -1,0 +1,1 @@
+SELECT * FROM gavel.user limit 10;

@@ -1,0 +1,1 @@
+SELECT * FROM gavel.picture limit 10;

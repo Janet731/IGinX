@@ -113,7 +113,7 @@ public class GavelRunner {
       String columns = conn.executeSql("SHOW COLUMNS;").getResultInString(false, "");
       System.out.println(columns);
 
-      List<Integer> queryIds = Arrays.asList(1,2,3);
+      List<Integer> queryIds = Arrays.asList(1,2,3,4,5,6);
       for (int queryId : queryIds) {
         // read from sql file
         String sqlString =
