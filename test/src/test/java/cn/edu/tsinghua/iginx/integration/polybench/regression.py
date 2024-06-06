@@ -5,22 +5,22 @@ def process_time_costs(file_path):
     with open(file_path, 'r') as file:
         lines = file.readlines()
 
-    for i in range(0, len(lines), 10):
+    for i in range(0, len(lines), 5):
         # 读取每五行
-        batch = lines[i:i+10]
-        if len(batch) < 10:
+        batch = lines[i:i+5]
+        if len(batch) < 5:
             break
 
         # 提取时间值并去掉' ms'
         times = [int(line.split(':')[1].strip().split()[0]) for line in batch]
 
-        # 前两行取平均值存入old数组
-        old_avg = sum(times[:5]) / 5
-        old.append(old_avg)
+        if i < 15:
+            old_avg = sum(times) / 5
+            old.append(old_avg)
 
-        # 后三行取平均值存入new数组
-        new_avg = sum(times[5:]) / 5
-        new.append(new_avg)
+        else:
+            new_avg = sum(times) / 5
+            new.append(new_avg)
 
     return old, new
 

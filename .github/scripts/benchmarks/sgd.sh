@@ -54,7 +54,7 @@ elif [ "$RUNNER_OS" = "macOS" ]; then
   sh -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '$COMMAND1$COMMAND2'"
 fi
 output_file="${GITHUB_WORKSPACE}/output.txt"
-for i in {1..10}
+for i in {1..5}
 do
   if [ "$RUNNER_OS" = "Linux" ]; then
     bash -c "echo '$COMMAND3' | xargs -0 -t -i ${SCRIPT_COMMAND}" > tmp.txt

@@ -102,12 +102,109 @@ jobs:
               run: |
                   chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
                   "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
+                
+            - name: Get old version
+              if: always()
+              shell: bash
+              run: |
+                git clone https://github.com/IGinX-THU/IGinX.git
+                cd IGinX
+                mvn clean package -DskipTests -P-format
+
+            - name: Stop ZooKeeper
+              uses: ./.github/actions/zookeeperRunner
+              with:
+                if-stop: "true"
+
+            - name: Stop IGinX
+              uses: ./.github/actions/iginxRunner
+              with:
+                version: ${VERSION}
+                if-stop: "true"
+
+            - name: Rerun ZooKeeper
+              uses: ./.github/actions/zookeeperRunner
+              with:
+                if-rerun: "true"
+
+            - name: Change IGinX config
+              uses: ./.github/actions/confWriter
+              with:
+                DB-name: ${{ matrix.DB-name }}
+                Set-Filter-Fragment-OFF: "true"
+                Root-Dir-Path: "IGinX"
+
+            - name: Start IGinX
+              shell: bash
+              run: |
+                cd IGinX
+                pwd
+                if [ "$RUNNER_OS" == "Linux" ]; then
+                  sudo sed -i 's/needInitBasicUDFFunctions=false/needInitBasicUDFFunctions=true/g' core/target/iginx-core-${VERSION}/conf/config.properties
+                elif [ "$RUNNER_OS" == "Windows" ]; then
+                  sed -i 's/needInitBasicUDFFunctions=false/needInitBasicUDFFunctions=true/g' core/target/iginx-core-${VERSION}/conf/config.properties
+                  sed -i 's/pythonCMD=python3/pythonCMD=python/g' core/target/iginx-core-${VERSION}/conf/config.properties
+                elif [ "$RUNNER_OS" == "macOS" ]; then
+                  sudo sed -i '' 's/needInitBasicUDFFunctions=false/needInitBasicUDFFunctions=true/' core/target/iginx-core-${VERSION}/conf/config.properties
+                else
+                  echo "$RUNNER_OS is not supported"
+                exit 1
+                fi
+                cd ..
+                chmod +x ".github/scripts/iginx/iginx_regression_udf_path2.sh"
+                ".github/scripts/iginx/iginx_regression_udf_path2.sh"
+
+            - name: set client test context
+              uses: ./IGinX/.github/actions/context
+              with:
+                work-name: restart-iginx-meta
+                metadata: ${{ matrix.metadata }}
+
+            - name: set client test context
+              uses: ./IGinX/.github/actions/context
+              with:
+                name: Pre Test Client Export File
+                shell: bash
+                run: |
+                  cd IGinX
+                  if [ "$RUNNER_OS" == "Linux" ]; then
+                    chmod +x ".github/scripts/test/cli/test_outfile.sh"
+                    ".github/scripts/test/cli/test_outfile.sh" "Parquet"
+                  elif [ "$RUNNER_OS" == "Windows" ]; then
+                    chmod +x ".github/scripts/test/cli/test_outfile_windows.sh"
+                    ".github/scripts/test/cli/test_outfile_windows.sh" "Parquet"
+                  elif [ "$RUNNER_OS" == "macOS" ]; then
+                    chmod +x ".github/scripts/test/cli/test_outfile_macos.sh"
+                    ".github/scripts/test/cli/test_outfile_macos.sh" "Parquet"
+                  fi
+
+            - name: Start data cleaning
+              shell: bash
+              run: |
+                pwd
+                if [ "$RUNNER_OS" == "Windows" ]; then
+                  python test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/DataCleaningRunner.py
+                else
+                  python3 test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/DataCleaningRunner.py
+                fi
+                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh"
+                "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh"
+
+            - name: Start sgd test
+              shell: bash
+              run: |
+                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
+                "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
+
+            - name: Start pagerank test
+              shell: bash
+              run: |
+                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
+                "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
 
             - name: Evaluation
               shell: bash
               run: |
-                  pwd
-                  ls
                   if [ "$RUNNER_OS" == "Windows" ]; then
                     python test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/regression.py
                   else
