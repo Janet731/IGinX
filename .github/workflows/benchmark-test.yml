@@ -89,13 +89,13 @@ jobs:
                     python3 test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/DataCleaningRunner.py
                   fi
                   chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh"
-                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh"
+                  ${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh
 
             - name: Start sgd test
               shell: bash
               run: |
                   chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
-                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
+                  ${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh 1
 
             - name: Start pagerank test
               shell: bash
