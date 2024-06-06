@@ -190,7 +190,7 @@ public class TPCHRunner {
         SessionExecuteSqlResult result = null;
         String[] sqls = sqlString.split(";");
         List<Long> timeCosts = new ArrayList<>();
-        for (int i = 0; i < 2; i++) { // TODO: 5
+        for (int i = 0; i < 5; i++) {
           startTime = System.currentTimeMillis();
           if (sqls.length == 1)
             // TODO: error
