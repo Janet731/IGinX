@@ -83,7 +83,7 @@ jobs:
               run: |
                   echo "Waiting for Hadoop to start..."
                   for i in {1..20}; do
-                    hdfs dfs -ls / || true
+                    hdfs dfs -ls hdfs://namenode:9000/ || true
                     if [ $? -eq 0 ]; then
                       echo "Hadoop is up and running."
                       break
