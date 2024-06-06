@@ -79,20 +79,6 @@ jobs:
                   DB-name: ${{ matrix.DB-name }}
                   shell: client-before
 
-            - name: Clean UDFs
-              if: always()
-              shell: bash
-              run: |
-                pwd
-                ls
-                mkdir IGinX/test/src/test/resources/dataCleaning
-                cp "test/src/test/resources/dataCleaning/zipcode_city.csv" "IGinX/test/src/test/resources/dataCleaning/zipcode_city.csv"
-                mkdir IGinX/test/src/test/resources/polybench
-                mkdir IGinX/test/src/test/resources/polybench/udf
-                cp "test/src/test/resources/polybench/udf/udaf_trainall.py" "IGinX/test/src/test/resources/polybench/udf/udaf_trainall.py"
-                cp "test/src/test/resources/polybench/udf/udsf_pagerank.py" "IGinX/test/src/test/resources/polybench/udf/udsf_pagerank.py"
-
-
             - name: Start data cleaning
               shell: bash
               run: |
@@ -136,6 +122,20 @@ jobs:
               with:
                 version: ${VERSION}
                 if-stop: "true"
+
+            - name: Clean UDFs
+              if: always()
+              shell: bash
+              run: |
+                pwd
+                ls
+                mkdir IGinX/test/src/test/resources/dataCleaning
+                cp "test/src/test/resources/dataCleaning/zipcode_city.csv" "IGinX/test/src/test/resources/dataCleaning/zipcode_city.csv"
+                mkdir IGinX/test/src/test/resources/polybench
+                mkdir IGinX/test/src/test/resources/polybench/udf
+                cp "test/src/test/resources/polybench/udf/udaf_trainall.py" "IGinX/test/src/test/resources/polybench/udf/udaf_trainall.py"
+                cp "test/src/test/resources/polybench/udf/udsf_pagerank.py" "IGinX/test/src/test/resources/polybench/udf/udsf_pagerank.py"
+
 
             - name: Rerun ZooKeeper
               uses: ./.github/actions/zookeeperRunner
