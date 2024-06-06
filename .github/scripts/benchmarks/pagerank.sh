@@ -1,53 +1,10 @@
 #!/bin/bash
 
-# 从网站下载数据
-if [ "$RUNNER_OS" = "Windows" ]; then
-  curl -O https://snap.stanford.edu/data/web-Google.txt.gz
-else
-  wget https://snap.stanford.edu/data/web-Google.txt.gz
+# 检查是否传入了参数
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <parameter>"
+    exit 1
 fi
-gzip -d web-Google.txt.gz
-echo "数据下载完成"
-
-# 源文件路径
-input_file="web-Google.txt"
-# 输出文件路径
-output_file="web-Google.csv"
-head -n 1000000 "$input_file" > "$input_file.temp"
-# 删除前4行并在文件开头插入一行
-sed '1,4d' "$input_file.temp" | (echo "fromnode,tonode" && cat) > "$output_file.temp"
-# 将所有\t替换为","
-sed 's/\t/,/g' "$output_file.temp" > "$output_file"
-# 删除临时文件
-rm "$output_file.temp"
-rm "$input_file.temp"
-rm "$input_file"
-echo "操作完成"
-
-# 可能需要执行：
-# dos2unix web-google.csv
-# 获取操作系统类型
-#os_type=$(uname -s)
-## 判断操作系统类型
-#if [ "$os_type" == "Linux" ] || [ "$os_type" == "Darwin" ] || [ "$os_type" == "FreeBSD" ] || [ "$os_type" == "SunOS" ]; then
-#    echo "当前系统是Unix/Linux/Mac系统，执行dos2unix命令"
-#    dos2unix web-google.csv
-#elif [ "$os_type" == "CYGWIN_NT-10.0" ] || [ "$os_type" == "MINGW32_NT-6.1" ]; then
-#    echo "当前系统是Windows系统，不需要执行dos2unix命令"
-#else
-#    echo "未知的操作系统类型"
-#fi
-
-index=0
-# 读取文件并在每一行前面加上序号
-while IFS= read -r line; do
-  echo "$index,$line" >> web-Google2.csv
-  index=$((index + 1))
-done < $output_file
-
-cat web-Google2.csv | head -n 10
-
-pip install networkx
 
 set -e
 
@@ -58,12 +15,63 @@ COMMAND3='select * from (select pagerank(key, fromnode, tonode) as pagerank from
 SCRIPT_COMMAND="bash client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '{}'"
 
 bash -c "chmod +x client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh"
-if [ "$RUNNER_OS" = "Linux" ]; then
-  bash -c "echo '$COMMAND1$COMMAND2' | xargs -0 -t -i ${SCRIPT_COMMAND}"
-elif [ "$RUNNER_OS" = "Windows" ]; then
-  bash -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.bat -e '$COMMAND1$COMMAND2'"
-elif [ "$RUNNER_OS" = "macOS" ]; then
-  sh -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '$COMMAND1$COMMAND2'"
+pip install networkx
+# 读取第一个参数
+param=$1
+
+# 使用参数
+echo "The parameter is: $param"
+
+if param == "1"; then
+  # 从网站下载数据
+  if [ "$RUNNER_OS" = "Windows" ]; then
+    curl -O https://snap.stanford.edu/data/web-Google.txt.gz
+  else
+    wget https://snap.stanford.edu/data/web-Google.txt.gz
+  fi
+  gzip -d web-Google.txt.gz
+  echo "数据下载完成"
+
+  # 源文件路径
+  input_file="web-Google.txt"
+  # 输出文件路径
+  output_file="web-Google.csv"
+  head -n 1000000 "$input_file" > "$input_file.temp"
+  # 删除前4行并在文件开头插入一行
+  sed '1,4d' "$input_file.temp" | (echo "fromnode,tonode" && cat) > "$output_file.temp"
+  # 将所有\t替换为","
+  sed 's/\t/,/g' "$output_file.temp" > "$output_file"
+  # 删除临时文件
+  rm "$output_file.temp"
+  rm "$input_file.temp"
+  rm "$input_file"
+  echo "操作完成"
+
+
+  index=0
+  # 读取文件并在每一行前面加上序号
+  while IFS= read -r line; do
+    echo "$index,$line" >> web-Google2.csv
+    index=$((index + 1))
+  done < $output_file
+
+  cat web-Google2.csv | head -n 10
+
+  if [ "$RUNNER_OS" = "Linux" ]; then
+    bash -c "echo '$COMMAND1$COMMAND2' | xargs -0 -t -i ${SCRIPT_COMMAND}"
+  elif [ "$RUNNER_OS" = "Windows" ]; then
+    bash -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.bat -e '$COMMAND1$COMMAND2'"
+  elif [ "$RUNNER_OS" = "macOS" ]; then
+    sh -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '$COMMAND1$COMMAND2'"
+  fi
+else
+  if [ "$RUNNER_OS" = "Linux" ]; then
+    bash -c "echo '$COMMAND2' | xargs -0 -t -i ${SCRIPT_COMMAND}"
+  elif [ "$RUNNER_OS" = "Windows" ]; then
+    bash -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.bat -e '$COMMAND2'"
+  elif [ "$RUNNER_OS" = "macOS" ]; then
+    sh -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '$COMMAND2'"
+  fi
 fi
 output_file="${GITHUB_WORKSPACE}/output.txt"
 for i in {1..5}

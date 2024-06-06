@@ -79,6 +79,20 @@ jobs:
                   DB-name: ${{ matrix.DB-name }}
                   shell: client-before
 
+            - name: Clean UDFs
+              if: always()
+              shell: bash
+              run: |
+                pwd
+                ls
+                mkdir IGinX/test/src/test/resources/dataCleaning
+                cp "test/src/test/resources/dataCleaning/zipcode_city.csv" "IGinX/test/src/test/resources/dataCleaning/zipcode_city.csv"
+                mkdir IGinX/test/src/test/resources/polybench
+                mkdir IGinX/test/src/test/resources/polybench/udf
+                cp "test/src/test/resources/polybench/udf/udaf_trainall.py" "IGinX/test/src/test/resources/polybench/udf/udaf_trainall.py"
+                cp "test/src/test/resources/polybench/udf/udsf_pagerank.py" "IGinX/test/src/test/resources/polybench/udf/udsf_pagerank.py"
+
+
             - name: Start data cleaning
               shell: bash
               run: |
@@ -101,7 +115,7 @@ jobs:
               shell: bash
               run: |
                   chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
-                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
+                  ${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh 1
                 
             - name: Get old version
               if: always()
@@ -110,6 +124,7 @@ jobs:
                 git clone https://github.com/IGinX-THU/IGinX.git
                 cd IGinX
                 mvn clean package -DskipTests -P-format
+                rm 
 
             - name: Stop ZooKeeper
               uses: ./.github/actions/zookeeperRunner
@@ -200,7 +215,7 @@ jobs:
               shell: bash
               run: |
                 chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
+                ${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh 2
 
             - name: Evaluation
               shell: bash
