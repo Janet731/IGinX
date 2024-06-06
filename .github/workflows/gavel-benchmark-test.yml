@@ -114,6 +114,9 @@ jobs:
               if: always()
               shell: bash
               run: |
+                chmod +rwx "Polystore-utils/gavel/user.csv"
+                chmod +rwx "Polystore-utils/gavel/picture.csv"
+                chmod +rwx "Polystore-utils/gavel/category.csv"
                 mvn test -q -Dtest=GavelDataInsertionIT -DfailIfNoTests=false -P-format
                 cd apache-iotdb-0.12.6-server-bin/tools
                 ./import-csv.sh -h 127.0.0.1 -p 6667 -u root -pw root -f ${GITHUB_WORKSPACE}/Polystore-utils/gavel/bid.csv

@@ -102,6 +102,10 @@ jobs:
                     sleep 30
                   done
 
+            - name: Check NameNode and DataNode logs
+              run: |
+                  cat /usr/local/hadoop/logs/hadoop-*.log
+
             - name: Leave HDFS safemode
               run: |
                   source $GITHUB_ENV
