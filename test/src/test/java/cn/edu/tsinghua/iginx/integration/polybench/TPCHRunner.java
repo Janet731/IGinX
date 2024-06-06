@@ -79,8 +79,7 @@ public class TPCHRunner {
       conn.openSession();
 
       // 输出所有存储引擎
-      String clusterInfo = conn.executeSql("SHOW CLUSTER INFO;").getResultInString(false,
- "");
+      String clusterInfo = conn.executeSql("SHOW CLUSTER INFO;").getResultInString(false, "");
       System.out.println(clusterInfo);
 
       // 添加存储引擎
@@ -182,8 +181,7 @@ public class TPCHRunner {
       for (int queryId : queryIds) {
         // read from sql file
         String sqlString =
-            readSqlFileAsString("src/test/resources/polybench/queries/q" + queryId +
- ".sql");
+            readSqlFileAsString("src/test/resources/polybench/queries/q" + queryId + ".sql");
 
         // 开始 tpch 查询
         System.out.println("start tpch query " + queryId);
@@ -211,12 +209,11 @@ public class TPCHRunner {
       // write avg time cost to file
       for (int i = 0; i < queryIds.size(); i++) {
         System.out.println(
-            "query " + queryIds.get(i) + ", average time cost: " + avgTimeCosts.get(i) +
- "ms");
+            "query " + queryIds.get(i) + ", average time cost: " + avgTimeCosts.get(i) + "ms");
       }
       String fileName = "src/test/resources/polybench/avgTimeCosts.txt";
       if (Files.exists(Paths.get(fileName))) { // 如果文件存在，即此次跑的是主分支代码，需要读取文件进行比较
-        List<Double> newAvgTimeCosts = readFromFile(fileName);  // 文件中存的是新分支的运行时间
+        List<Double> newAvgTimeCosts = readFromFile(fileName); // 文件中存的是新分支的运行时间
         for (int i = 0; i < queryIds.size(); i++) {
           System.out.println(
               "query "

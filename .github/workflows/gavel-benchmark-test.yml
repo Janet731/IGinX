@@ -33,29 +33,28 @@ jobs:
             - name: download gavel data generator
               shell: bash
               run: |
-                if [ "$RUNNER_OS" == "Windows" ]; then
-                  python thu_cloud_download.py \
-                  -l https://cloud.tsinghua.edu.cn/d/59e291cf410a479dba46/ \
-                  -s  "."
-                else
-                  python3 thu_cloud_download.py \
-                  -l https://cloud.tsinghua.edu.cn/d/59e291cf410a479dba46/ \
-                  -s  "."
-                fi
-                pip install pydbgen
-                pip uninstall -y Faker
-                pip install Faker==2.0.0
-                cd Polystore-utils
-                ls
-
+                  if [ "$RUNNER_OS" == "Windows" ]; then
+                    python thu_cloud_download.py \
+                    -l https://cloud.tsinghua.edu.cn/d/59e291cf410a479dba46/ \
+                    -s  "."
+                  else
+                    python3 thu_cloud_download.py \
+                    -l https://cloud.tsinghua.edu.cn/d/59e291cf410a479dba46/ \
+                    -s  "."
+                  fi
+                  pip install pydbgen
+                  pip uninstall -y Faker
+                  pip install Faker==2.0.0
+                  cd Polystore-utils
+                  ls
 
             - name: Run GenerateData main function
               run: |
-                cd Polystore-utils
-                mkdir gavel
-                mvn clean compile exec:java -Dexec.mainClass=cn.edu.tsinghua.benchmark.GenerateData
-                cd gavel
-                ls
+                  cd Polystore-utils
+                  mkdir gavel
+                  mvn clean compile exec:java -Dexec.mainClass=cn.edu.tsinghua.benchmark.GenerateData
+                  cd gavel
+                  ls
 
             - name: Run ZooKeeper
               uses: ./.github/actions/zookeeperRunner
@@ -79,55 +78,55 @@ jobs:
               run: |
                   chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/iotdb12.sh"
                   "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/iotdb12.sh"
-                
+
             - name: Install IGinX with Maven
               shell: bash
               run: |
-                mvn clean package -DskipTests -P-format -q
+                  mvn clean package -DskipTests -P-format -q
 
             - name: Change IGinX config
               uses: ./.github/actions/confWriter
               with:
-                DB-name: "MongoDB"
-                Set-Filter-Fragment-OFF: "true"
+                  DB-name: "MongoDB"
+                  Set-Filter-Fragment-OFF: "true"
 
-          # start udf path test first to avoid being effected
+            # start udf path test first to avoid being effected
             - name: Start IGinX
               uses: ./.github/actions/iginxRunner
               with:
-                version: ${VERSION}
-                if-test-udf: "true"
+                  version: ${VERSION}
+                  if-test-udf: "true"
 
             - name: set client test context
               uses: ./.github/actions/context
               with:
-                work-name: restart-iginx-meta
-                metadata: ${{ matrix.metadata }}
+                  work-name: restart-iginx-meta
+                  metadata: ${{ matrix.metadata }}
 
             - name: set client test context
               uses: ./.github/actions/context
               with:
-                DB-name: "MongoDB"
-                shell: client-before
+                  DB-name: "MongoDB"
+                  shell: client-before
 
             - name: Start storing data
               if: always()
               shell: bash
               run: |
-                cd Polystore-utils/gavel
-                chmod +r "user.csv"
-                chmod +r "picture.csv"
-                chmod +r "category.csv"
-                cd ../..
-                mvn test -q -Dtest=GavelDataInsertionIT -DfailIfNoTests=false -P-format
-                cd apache-iotdb-0.12.6-server-bin/tools
-                ./import-csv.sh -h 127.0.0.1 -p 6667 -u root -pw root -f ${GITHUB_WORKSPACE}/Polystore-utils/gavel/bid.csv
-                cd ../..
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/loadGavel.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/loadGavel.sh"
+                  cd Polystore-utils/gavel
+                  chmod +r "user.csv"
+                  chmod +r "picture.csv"
+                  chmod +r "category.csv"
+                  cd ../..
+                  mvn test -q -Dtest=GavelDataInsertionIT -DfailIfNoTests=false -P-format
+                  cd apache-iotdb-0.12.6-server-bin/tools
+                  ./import-csv.sh -h 127.0.0.1 -p 6667 -u root -pw root -f ${GITHUB_WORKSPACE}/Polystore-utils/gavel/bid.csv
+                  cd ../..
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/loadGavel.sh"
+                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/loadGavel.sh"
 
             - name: Run session test
               if: always()
               shell: bash
               run: |
-                mvn test -q -Dtest=GavelRunner -DfailIfNoTests=false -P-format
+                  mvn test -q -Dtest=GavelRunner -DfailIfNoTests=false -P-format

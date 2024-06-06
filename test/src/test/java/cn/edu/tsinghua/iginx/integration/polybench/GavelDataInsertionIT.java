@@ -1,34 +1,18 @@
 package cn.edu.tsinghua.iginx.integration.polybench;
 
-import com.mongodb.MongoClientSettings;
-import com.mongodb.ServerAddress;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import org.bson.Document;
-import org.junit.Test;
-import org.postgresql.copy.CopyManager;
-import org.postgresql.core.BaseConnection;
-
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import org.junit.Test;
 
 public class GavelDataInsertionIT {
-  private static final String dataPath = System.getProperty("user.dir") + "/../Polystore-utils/gavel";
+  private static final String dataPath =
+      System.getProperty("user.dir") + "/../Polystore-utils/gavel";
 
   public void GavelDataInsertionIT() {}
+
   @Test
   public void insertDataIntoPostgreSQL() {
     int port = 5432;
@@ -66,30 +50,25 @@ public class GavelDataInsertionIT {
         stmt.executeUpdate("DROP TABLE IF EXISTS picture;");
         stmt.executeUpdate("DROP TABLE IF EXISTS category;");
         stmt.executeUpdate(
-                "CREATE TABLE \"user\" (" +
-                        "id INTEGER PRIMARY KEY, " +
-                        "email VARCHAR(64), " +
-                        "password VARCHAR(16), " +
-                        "last_name VARCHAR(16), " +
-                        "first_name VARCHAR(16), " +
-                        "gender VARCHAR(6), " +
-                        "birthday VARCHAR(16), " +
-                        "country VARCHAR(64), " +
-                        "city VARCHAR(32), " +
-                        "zip_code VARCHAR(16));"
-        );
+            "CREATE TABLE \"user\" ("
+                + "id INTEGER PRIMARY KEY, "
+                + "email VARCHAR(64), "
+                + "password VARCHAR(16), "
+                + "last_name VARCHAR(16), "
+                + "first_name VARCHAR(16), "
+                + "gender VARCHAR(6), "
+                + "birthday VARCHAR(16), "
+                + "country VARCHAR(64), "
+                + "city VARCHAR(32), "
+                + "zip_code VARCHAR(16));");
         stmt.executeUpdate(
-                "CREATE TABLE category (" +
-                        "id INTEGER PRIMARY KEY, " +
-                        "name VARCHAR(16));"
-        );
+            "CREATE TABLE category (" + "id INTEGER PRIMARY KEY, " + "name VARCHAR(16));");
         stmt.executeUpdate(
-                "CREATE TABLE picture (" +
-                        "filename VARCHAR(64) PRIMARY KEY, " +
-                        "type INTEGER, " +
-                        "size BIGINT, " +
-                        "auction INTEGER);"
-        );
+            "CREATE TABLE picture ("
+                + "filename VARCHAR(64) PRIMARY KEY, "
+                + "type INTEGER, "
+                + "size BIGINT, "
+                + "auction INTEGER);");
 
         // 赋予权限
         System.out.println("赋予权限...");
@@ -99,9 +78,12 @@ public class GavelDataInsertionIT {
 
         // 导入 CSV 文件
         System.out.println("导入 CSV 文件...");
-        stmt.executeUpdate("COPY \"user\" FROM '" + dataPath + "/user.csv' DELIMITER ',' CSV HEADER;");
-        stmt.executeUpdate("COPY category FROM '" + dataPath + "/category.csv' DELIMITER ',' CSV HEADER;");
-        stmt.executeUpdate("COPY picture FROM '" + dataPath + "/picture.csv' DELIMITER ',' CSV HEADER;");
+        stmt.executeUpdate(
+            "COPY \"user\" FROM '" + dataPath + "/user.csv' DELIMITER ',' CSV HEADER;");
+        stmt.executeUpdate(
+            "COPY category FROM '" + dataPath + "/category.csv' DELIMITER ',' CSV HEADER;");
+        stmt.executeUpdate(
+            "COPY picture FROM '" + dataPath + "/picture.csv' DELIMITER ',' CSV HEADER;");
 
         System.out.println("操作完成！");
       } else {
