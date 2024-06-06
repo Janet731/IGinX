@@ -1,11 +1,16 @@
 package cn.edu.tsinghua.iginx.integration.polybench;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 import org.junit.Test;
+import org.postgresql.copy.CopyManager;
+import org.postgresql.core.BaseConnection;
 
 public class GavelDataInsertionIT {
   private static final String dataPath =
@@ -78,12 +83,17 @@ public class GavelDataInsertionIT {
 
         // 导入 CSV 文件
         System.out.println("导入 CSV 文件...");
-        stmt.executeUpdate(
-            "COPY \"user\" FROM '" + dataPath + "/user.csv' DELIMITER ',' CSV HEADER;");
-        stmt.executeUpdate(
-            "COPY category FROM '" + dataPath + "/category.csv' DELIMITER ',' CSV HEADER;");
-        stmt.executeUpdate(
-            "COPY picture FROM '" + dataPath + "/picture.csv' DELIMITER ',' CSV HEADER;");
+        CopyManager copyManager = new CopyManager((BaseConnection) conn);
+        List<String> tableNames =
+                Arrays.asList("user", "category", "picture");
+        for (String tableName : tableNames) {
+          String filePath = String.format("%s/%s.csv", dataPath, tableName);
+          FileReader fileReader = new FileReader(filePath);
+          // 使用 CopyManager 执行 COPY 命令将数据从 CSV 文件加载到数据库表中
+          copyManager.copyIn(
+                  "COPY " + tableName + " FROM STDIN WITH DELIMITER ',' CSV", fileReader);
+          System.out.println("Data loaded successfully from CSV to table " + tableName);
+        }
 
         System.out.println("操作完成！");
       } else {
@@ -92,6 +102,10 @@ public class GavelDataInsertionIT {
     } catch (SQLException e) {
       System.out.println("SQLException: " + e.getMessage());
       e.printStackTrace();
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 }

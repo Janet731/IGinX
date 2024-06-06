@@ -15,7 +15,6 @@ COMMAND3="select trainall(key,label,lepton_pt,lepton_eta,lepton_phi,missing_ener
 SCRIPT_COMMAND="bash client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '{}'"
 
 bash -c "chmod +x client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh"
-output_file="${GITHUB_WORKSPACE}/output.txt"
 
 pip install scikit-learn pandas numpy
 
@@ -70,6 +69,7 @@ else
     sh -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '$COMMAND2'"
   fi
 fi
+output_file="${GITHUB_WORKSPACE}/output.txt"
 for i in {1..5}
 do
   if [ "$RUNNER_OS" = "Linux" ]; then
