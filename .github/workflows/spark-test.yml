@@ -41,11 +41,22 @@ jobs:
                   tar -xzf hadoop-2.10.2.tar.gz
                   sudo mv hadoop-2.10.2 /usr/local/hadoop
 
+            - name: Configure Hadoop
+              run: |
+                  cat <<EOF > /usr/local/hadoop/etc/hadoop/core-site.xml
+                  <configuration>
+                      <property>
+                          <name>fs.defaultFS</name>
+                          <value>hdfs://hadoop-namenode:9000</value>
+                      </property>
+                  </configuration>
+                  EOF
+
             - name: Set up Hadoop environment variables
               run: |
                   echo "HADOOP_HOME=/usr/local/hadoop" >> $GITHUB_ENV
-                  echo "PATH=$PATH:/usr/local/hadoop/bin" >> $GITHUB_ENV
                   echo "HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop" >> $GITHUB_ENV
+                  echo "PATH=$PATH:/usr/local/hadoop/bin" >> $GITHUB_ENV
                   echo "HADOOP_INSTALL=/usr/local/hadoop" >> $GITHUB_ENV
                   echo "HADOOP_MAPRED_HOME=/usr/local/hadoop" >> $GITHUB_ENV
                   echo "HADOOP_COMMON_HOME=/usr/local/hadoop" >> $GITHUB_ENV
@@ -55,8 +66,6 @@ jobs:
             - name: Check HDFS command
               run: |
                   source $GITHUB_ENV
-                  echo "HADOOP_HOME=$HADOOP_HOME"
-                  echo "PATH=$PATH"
                   hdfs version
 
             - name: Install Spark
@@ -83,7 +92,7 @@ jobs:
               run: |
                   echo "Waiting for Hadoop to start..."
                   for i in {1..20}; do
-                    hdfs dfs -ls hdfs://namenode:9000/ || true
+                    hdfs dfs -ls / || true
                     if [ $? -eq 0 ]; then
                       echo "Hadoop is up and running."
                       break
