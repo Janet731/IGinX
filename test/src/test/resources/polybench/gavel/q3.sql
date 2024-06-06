@@ -1,1 +1,1 @@
-select gavel.bid.amount from gavel.user join gavel.bid on gavel.user.id = gavel.bid.user join gavel.auction on gavel.bid.user = gavel.auction.user where gavel.user.password = "ceJWN9GynL" and gavel.bid.amount < 100000;
+select gavel.bid.amount from gavel.user join gavel.bid on gavel.user.id = gavel.bid.user join gavel.auction on gavel.bid.user = gavel.auction.user where gavel.user.password = "ceJWN9GynL" and gavel.bid.amount < 100000 limit 5;
