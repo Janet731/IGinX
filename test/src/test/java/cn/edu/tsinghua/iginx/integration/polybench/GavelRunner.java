@@ -119,7 +119,7 @@ public class GavelRunner {
         String sqlString =
                 readSqlFileAsString("src/test/resources/polybench/gavel/q" + queryId + ".sql");
 
-        // 开始 tpch 查询
+        // 开始 gavel 查询
         System.out.println("start gavel query " + queryId);
         startTime = System.currentTimeMillis();
 
