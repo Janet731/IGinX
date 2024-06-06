@@ -1,0 +1,1 @@
+SELECT category FROM gavel.auction limit 10;
