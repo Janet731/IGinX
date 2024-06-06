@@ -91,7 +91,7 @@ public class GavelDataInsertionIT {
           FileReader fileReader = new FileReader(filePath);
           // 使用 CopyManager 执行 COPY 命令将数据从 CSV 文件加载到数据库表中
           copyManager.copyIn(
-                  "COPY \"" + tableName + "\" FROM STDIN WITH DELIMITER ',' CSV", fileReader);
+                  "COPY \"" + tableName + "\" FROM STDIN WITH DELIMITER ',' CSV HEADER", fileReader);
           System.out.println("Data loaded successfully from CSV to table " + tableName);
         }
 
