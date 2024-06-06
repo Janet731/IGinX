@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 插入数据
-COMMAND1='LOAD DATA FROM INFILE "Polystore-utils/gavel/auction.csv" AS CSV SKIPPING HEADER INTO nation(key,id,title,description,start_date,end_date,category,user);'
+COMMAND1='LOAD DATA FROM INFILE "Polystore-utils/gavel/auction.csv" AS CSV SKIPPING HEADER INTO gavel.auction(key,id,title,description,start_date,end_date,category,user);'
 SCRIPT_COMMAND="bash client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '{}'"
 
 bash -c "chmod +x client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh"
