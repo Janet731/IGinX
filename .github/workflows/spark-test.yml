@@ -92,6 +92,11 @@ jobs:
                     sleep 30
                   done
 
+            - name: Leave HDFS safemode
+              run: |
+                  source $GITHUB_ENV
+                  hdfs dfsadmin -safemode leave
+
             - name: Upload TPC-H data to HDFS
               run: |
                   source $GITHUB_ENV
