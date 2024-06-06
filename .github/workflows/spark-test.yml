@@ -93,7 +93,7 @@ jobs:
                   source $GITHUB_ENV
                   echo "Waiting for Hadoop to start..."
                   for i in {1..20}; do
-                    hdfs dfs -ls / || true
+                    hdfs dfsadmin -safemode get | grep -q 'Safe mode is OFF'
                     if [ $? -eq 0 ]; then
                       echo "Hadoop is up and running."
                       break
