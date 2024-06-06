@@ -37,9 +37,9 @@ jobs:
 
             - name: Install Hadoop
               run: |
-                  wget https://downloads.apache.org/hadoop/common/hadoop-2.10.2/hadoop-2.10.2.tar.gz
-                  tar -xzf hadoop-2.10.2.tar.gz
-                  sudo mv hadoop-2.10.2 /usr/local/hadoop
+                  wget https://archive.apache.org/dist/hadoop/core/hadoop-2.7.4/hadoop-2.7.4.tar.gz
+                  tar -xzf hadoop-2.7.4.tar.gz
+                  sudo mv hadoop-2.7.4 /usr/local/hadoop
 
             - name: Configure Hadoop
               run: |
