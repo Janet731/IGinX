@@ -202,9 +202,9 @@ jobs:
               run: |
                   set -e
 
-                  COMMAND1='show cluster info;'
-                  COMMAND2="select * from trainall limit 5;"
-                  COMMAND3="select * from pagerank limit 5;"
+                  COMMAND1='show cluster info;show columns;'
+                  COMMAND2="select * from pagerank limit 5;"
+                  COMMAND3="select * from trainall limit 5;"
 
                   SCRIPT_COMMAND="bash client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '{}'"
 
