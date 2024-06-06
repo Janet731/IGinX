@@ -209,7 +209,7 @@ jobs:
               shell: bash
               run: |
                 chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
+                ${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh 2
 
             - name: Start pagerank test
               shell: bash
