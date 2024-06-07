@@ -5,6 +5,10 @@ inputs:
         description: "DB name"
         required: false
         default: IoTDB12
+    Root-Dir-Path:
+        description: "the path of IGinX root directory"
+        required: false
+        default: "${GITHUB_WORKSPACE}"
 
 runs:
     using: "composite" # Mandatory parameter
@@ -24,14 +28,14 @@ runs:
           shell: bash
           run: |
               if [ "$RUNNER_OS" == "Linux" ]; then
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/dataSources/influxdb.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/dataSources/influxdb.sh" 8088 8087
+                chmod +x "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/influxdb.sh"
+                "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/influxdb.sh" 8088 8087
               elif [ "$RUNNER_OS" == "Windows" ]; then
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/dataSources/influxdb_windows.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/dataSources/influxdb_windows.sh" 8088 8087
+                chmod +x "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/influxdb_windows.sh"
+                "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/influxdb_windows.sh" 8088 8087
               elif [ "$RUNNER_OS" == "macOS" ]; then
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/dataSources/influxdb_macos.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/dataSources/influxdb_macos.sh" 8088 8087
+                chmod +x "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/influxdb_macos.sh"
+                "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/influxdb_macos.sh" 8088 8087
               else
                 echo "$RUNNER_OS is not supported"
                 exit 1
@@ -46,14 +50,14 @@ runs:
           shell: bash
           run: |
               if [ "$RUNNER_OS" == "Linux" ]; then
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/dataSources/iotdb12.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/dataSources/iotdb12.sh" 6667 6668 6669
+                chmod +x "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/iotdb12.sh"
+                "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/iotdb12.sh" 6667 6668 6669
               elif [ "$RUNNER_OS" == "Windows" ]; then
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/dataSources/iotdb12_windows.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/dataSources/iotdb12_windows.sh" 6667 6668 6669
+                chmod +x "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/iotdb12_windows.sh"
+                "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/iotdb12_windows.sh" 6667 6668 6669
               elif [ "$RUNNER_OS" == "macOS" ]; then
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/dataSources/iotdb12_macos.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/dataSources/iotdb12_macos.sh" 6667 6668 6669
+                chmod +x "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/iotdb12_macos.sh"
+                "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/iotdb12_macos.sh" 6667 6668 6669
               else
                 echo "$RUNNER_OS is not supported"
                 exit 1
@@ -64,14 +68,14 @@ runs:
           shell: bash
           run: |
               if [ "$RUNNER_OS" == "Linux" ]; then
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/dataSources/mix_iotdb12_influxdb.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/dataSources/mix_iotdb12_influxdb.sh"
+                chmod +x "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/mix_iotdb12_influxdb.sh"
+                "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/mix_iotdb12_influxdb.sh"
               elif [ "$RUNNER_OS" == "Windows" ]; then
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/dataSources/mix_iotdb12_influxdb_windows.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/dataSources/mix_iotdb12_influxdb_windows.sh"
+                chmod +x "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/mix_iotdb12_influxdb_windows.sh"
+                "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/mix_iotdb12_influxdb_windows.sh"
               elif [ "$RUNNER_OS" == "macOS" ]; then
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/dataSources/mix_iotdb12_influxdb_macos.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/dataSources/mix_iotdb12_influxdb_macos.sh"
+                chmod +x "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/mix_iotdb12_influxdb_macos.sh"
+                "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/mix_iotdb12_influxdb_macos.sh"
               else
                 echo "$RUNNER_OS is not supported"
                 exit 1
@@ -81,13 +85,13 @@ runs:
           name: Run DB
           shell: bash
           run: |
-              cp -f "${GITHUB_WORKSPACE}/conf/config.properties" "${GITHUB_WORKSPACE}/conf/config.properties.bak"
+              cp -f "${{ inputs.Root-Dir-Path }}/conf/config.properties" "${{ inputs.Root-Dir-Path }}/conf/config.properties.bak"
               if [[ "$RUNNER_OS" == "Linux" || "$RUNNER_OS" == "Windows" ]]; then
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/dataSources/parquet_linux_windows.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/dataSources/parquet_linux_windows.sh" 6667 6888 test/mn test/iginx_mn false false conf/config.properties
+                chmod +x "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/parquet_linux_windows.sh"
+                "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/parquet_linux_windows.sh" 6667 6888 test/mn test/iginx_mn false false conf/config.properties
               elif [ "$RUNNER_OS" == "macOS" ]; then
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/dataSources/parquet_macos.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/dataSources/parquet_macos.sh" 6667 6888 test/mn test/iginx_mn false false conf/config.properties
+                chmod +x "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/parquet_macos.sh"
+                "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/parquet_macos.sh" 6667 6888 test/mn test/iginx_mn false false conf/config.properties
               else
                 echo "$RUNNER_OS is not supported"
                 exit 1
@@ -117,13 +121,13 @@ runs:
           name: Run DB
           shell: bash
           run: |
-              cp -f "${GITHUB_WORKSPACE}/conf/config.properties" "${GITHUB_WORKSPACE}/conf/config.properties.bak"
+              cp -f "${{ inputs.Root-Dir-Path }}/conf/config.properties" "${{ inputs.Root-Dir-Path }}/conf/config.properties.bak"
               if [[ "$RUNNER_OS" == "Linux" || "$RUNNER_OS" == "Windows" ]]; then
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/dataSources/filesystem_linux_windows.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/dataSources/filesystem_linux_windows.sh" 6667 6888 test/mn test/iginx_mn false false conf/config.properties
+                chmod +x "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/filesystem_linux_windows.sh"
+                "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/filesystem_linux_windows.sh" 6667 6888 test/mn test/iginx_mn false false conf/config.properties
               elif [ "$RUNNER_OS" == "macOS" ]; then
-                chmod +x "${GITHUB_WORKSPACE}/.github/scripts/dataSources/filesystem_macos.sh"
-                "${GITHUB_WORKSPACE}/.github/scripts/dataSources/filesystem_macos.sh" 6667 6888 test/mn test/iginx_mn false false conf/config.properties
+                chmod +x "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/filesystem_macos.sh"
+                "${{ inputs.Root-Dir-Path }}/.github/scripts/dataSources/filesystem_macos.sh" 6667 6888 test/mn test/iginx_mn false false conf/config.properties
               else
                 echo "$RUNNER_OS is not supported"
                 exit 1

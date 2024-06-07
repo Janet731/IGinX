@@ -1,10 +1,17 @@
 #!/bin/sh
+
+rm ./core/target/iginx-core-0.6.0-SNAPSHOT/udf_funcs/python_scripts/udaf_trainall.py
+rm ./core/target/iginx-core-0.6.0-SNAPSHOT/udf_funcs/python_scripts/udsf_pagerank.py
+
+cd IGinX
 pwd
 set -e
 
 cd core/target/iginx-core-0.6.0-SNAPSHOT/
 
 iginx_home_path=$PWD
+
+echo "Iginx home path: $iginx_home_path"
 
 cd ..
 
@@ -16,8 +23,10 @@ if [ -n "$MSYSTEM" ]; then
     powershell -Command "Start-Process -FilePath 'iginx-core-0.6.0-SNAPSHOT/sbin/start_iginx.bat' -NoNewWindow -RedirectStandardOutput '../../iginx-udf.log' -RedirectStandardError '../../iginx-udf-error.log'"
 else
     export IGINX_HOME=$iginx_home_path
+    echo "Iginx home path: $IGINX_HOME"
+    pwd
 
     sh -c "chmod +x iginx-core-0.6.0-SNAPSHOT/sbin/start_iginx.sh"
 
-    sh -c "nohup iginx-core-0.6.0-SNAPSHOT/sbin/start_iginx.sh > ../../iginx-u.log 2>&1 &"
+    sh -c "nohup iginx-core-0.6.0-SNAPSHOT/sbin/start_iginx.sh > ../../iginx.log 2>&1 &"
 fi

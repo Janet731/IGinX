@@ -1,0 +1,257 @@
+name: Benchmark Tests
+
+on:
+    push:
+        branches: [feat-benchmark]
+
+env:
+    VERSION: 0.6.0-SNAPSHOT
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    Benchmark-Test:
+        timeout-minutes: 35
+        strategy:
+            fail-fast: false
+            matrix:
+                java: [8]
+                python-version: ["3.9"]
+                os: [ubuntu-latest, macOS-13, windows-latest]
+                DB-name:
+                    [
+                        "IoTDB12",
+                        "InfluxDB",
+                        "Parquet",
+                        "PostgreSQL",
+                        "FileSystem",
+                        "Redis",
+                        "MongoDB",
+                        "MySQL",
+                    ]
+                metadata: [zookeeper]
+        runs-on: ${{ matrix.os }}
+
+        steps:
+            - uses: actions/checkout@v4
+            - name: Environment dependence
+              uses: ./.github/actions/dependence
+              with:
+                  python-version: ${{ matrix.python-version }}
+                  java: ${{ matrix.java }}
+
+            - name: Run ZooKeeper
+              uses: ./.github/actions/zookeeperRunner
+
+            - name: Run DB
+              uses: ./.github/actions/dbRunner
+              with:
+                  DB-name: ${{ matrix.DB-name }}
+
+            - name: Install IGinX with Maven
+              shell: bash
+              run: |
+                  mvn clean package -DskipTests -P-format -q
+
+            - name: Change IGinX config
+              uses: ./.github/actions/confWriter
+              with:
+                  DB-name: ${{ matrix.DB-name }}
+                  Set-Filter-Fragment-OFF: "true"
+
+            # start udf path test first to avoid being effected
+            - name: Start IGinX
+              uses: ./.github/actions/iginxRunner
+              with:
+                  version: ${VERSION}
+                  if-test-udf: "true"
+
+            - name: set client test context
+              uses: ./.github/actions/context
+              with:
+                  work-name: restart-iginx-meta
+                  metadata: ${{ matrix.metadata }}
+
+            - name: set client test context
+              uses: ./.github/actions/context
+              with:
+                  DB-name: ${{ matrix.DB-name }}
+                  shell: client-before
+
+            - name: Start data cleaning
+              shell: bash
+              run: |
+                  pwd
+                  if [ "$RUNNER_OS" == "Windows" ]; then
+                    python test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/DataCleaningRunner.py
+                  else
+                    python3 test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/DataCleaningRunner.py
+                  fi
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh"
+                  ${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh
+
+            - name: Start sgd test
+              shell: bash
+              run: |
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
+                  ${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh 1
+
+            - name: Start pagerank test
+              shell: bash
+              run: |
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
+                  ${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh 1
+
+            - name: Show IGinX log
+              if: always()
+              shell: bash
+              run: |
+                  cat iginx-*.log
+
+            - name: Get old version
+              if: always()
+              shell: bash
+              run: |
+                  git clone https://github.com/IGinX-THU/IGinX.git
+                  cd IGinX
+                  mvn clean package -DskipTests -P-format
+
+            - name: Stop ZooKeeper
+              uses: ./.github/actions/zookeeperRunner
+              with:
+                  if-stop: "true"
+
+            - name: Stop IGinX
+              uses: ./.github/actions/iginxRunner
+              with:
+                  version: ${VERSION}
+                  if-stop: "true"
+
+            - name: Clean UDFs
+              if: always()
+              shell: bash
+              run: |
+                  pwd
+                  ls
+                  mkdir IGinX/test/src/test/resources/dataCleaning
+                  cp "test/src/test/resources/dataCleaning/zipcode_city.csv" "IGinX/test/src/test/resources/dataCleaning/zipcode_city.csv"
+                  mkdir IGinX/test/src/test/resources/polybench
+                  mkdir IGinX/test/src/test/resources/polybench/udf
+                  cp "test/src/test/resources/polybench/udf/udaf_trainall.py" "IGinX/test/src/test/resources/polybench/udf/udaf_trainall.py"
+                  cp "test/src/test/resources/polybench/udf/udsf_pagerank.py" "IGinX/test/src/test/resources/polybench/udf/udsf_pagerank.py"
+
+            - name: Rerun ZooKeeper
+              uses: ./.github/actions/zookeeperRunner
+              with:
+                  if-rerun: "true"
+
+            - name: Change IGinX config
+              uses: ./.github/actions/confWriter
+              with:
+                  DB-name: ${{ matrix.DB-name }}
+                  Set-Filter-Fragment-OFF: "true"
+                  Root-Dir-Path: "IGinX"
+
+            - name: Start IGinX
+              shell: bash
+              run: |
+                  cd IGinX
+                  pwd
+                  if [ "$RUNNER_OS" == "Linux" ]; then
+                    sudo sed -i 's/needInitBasicUDFFunctions=false/needInitBasicUDFFunctions=true/g' core/target/iginx-core-${VERSION}/conf/config.properties
+                  elif [ "$RUNNER_OS" == "Windows" ]; then
+                    sed -i 's/needInitBasicUDFFunctions=false/needInitBasicUDFFunctions=true/g' core/target/iginx-core-${VERSION}/conf/config.properties
+                    sed -i 's/pythonCMD=python3/pythonCMD=python/g' core/target/iginx-core-${VERSION}/conf/config.properties
+                  elif [ "$RUNNER_OS" == "macOS" ]; then
+                    sudo sed -i '' 's/needInitBasicUDFFunctions=false/needInitBasicUDFFunctions=true/' core/target/iginx-core-${VERSION}/conf/config.properties
+                  else
+                    echo "$RUNNER_OS is not supported"
+                  exit 1
+                  fi
+                  cd ..
+                  chmod +x ".github/scripts/iginx/iginx_regression_udf_path2.sh"
+                  ".github/scripts/iginx/iginx_regression_udf_path2.sh"
+
+            - name: set client test context
+              uses: ./IGinX/.github/actions/context
+              with:
+                  work-name: restart-iginx-meta
+                  metadata: ${{ matrix.metadata }}
+
+            - name: set client test context
+              uses: ./IGinX/.github/actions/context
+              with:
+                  name: Pre Test Client Export File
+                  shell: bash
+                  run: |
+                      cd IGinX
+                      if [ "$RUNNER_OS" == "Linux" ]; then
+                        chmod +x ".github/scripts/test/cli/test_outfile.sh"
+                        ".github/scripts/test/cli/test_outfile.sh" "Parquet"
+                      elif [ "$RUNNER_OS" == "Windows" ]; then
+                        chmod +x ".github/scripts/test/cli/test_outfile_windows.sh"
+                        ".github/scripts/test/cli/test_outfile_windows.sh" "Parquet"
+                      elif [ "$RUNNER_OS" == "macOS" ]; then
+                        chmod +x ".github/scripts/test/cli/test_outfile_macos.sh"
+                        ".github/scripts/test/cli/test_outfile_macos.sh" "Parquet"
+                      fi
+
+            - name: Test
+              shell: bash
+              run: |
+                  set -e
+
+                  COMMAND1='show cluster info;show columns;'
+                  COMMAND2="select * from pagerank limit 5;"
+                  COMMAND3="select * from trainall limit 5;"
+
+                  SCRIPT_COMMAND="bash client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e '{}'"
+
+                  bash -c "chmod +x client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh"
+                  if [ "$RUNNER_OS" = "Linux" ]; then
+                  bash -c "echo '$COMMAND1$COMMAND2$COMMAND3' | xargs -0 -t -i ${SCRIPT_COMMAND}"
+                  elif [ "$RUNNER_OS" = "Windows" ]; then
+                  bash -c "client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.bat -e '$COMMAND1$COMMAND2$COMMAND3'"
+                  elif [ "$RUNNER_OS" = "macOS" ]; then
+                  sh -c "echo '$COMMAND1$COMMAND2$COMMAND3' | xargs -0 -t -I F sh client/target/iginx-client-0.6.0-SNAPSHOT/sbin/start_cli.sh -e 'F'"
+                  fi
+
+            - name: Start data cleaning
+              shell: bash
+              run: |
+                  pwd
+                  if [ "$RUNNER_OS" == "Windows" ]; then
+                    python test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/DataCleaningRunner.py
+                  else
+                    python3 test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/DataCleaningRunner.py
+                  fi
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh"
+                  "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/dataCleaning.sh"
+
+            - name: Start sgd test
+              shell: bash
+              run: |
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh"
+                  ${GITHUB_WORKSPACE}/.github/scripts/benchmarks/sgd.sh 2
+
+            - name: Start pagerank test
+              shell: bash
+              run: |
+                  chmod +x "${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh"
+                  ${GITHUB_WORKSPACE}/.github/scripts/benchmarks/pagerank.sh 2
+
+            - name: Evaluation
+              shell: bash
+              run: |
+                  if [ "$RUNNER_OS" == "Windows" ]; then
+                    python test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/regression.py
+                  else
+                    python3 test/src/test/java/cn/edu/tsinghua/iginx/integration/polybench/regression.py
+                  fi
+
+            - name: Show IGinX log
+              if: always()
+              shell: bash
+              run: |
+                  cat iginx-*.log
